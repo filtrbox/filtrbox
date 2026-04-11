@@ -1,153 +1,534 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FILTRBOX — Dashboard Admin</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, sans-serif; background: #f0f4f8; color: #1a1a2e; }
-header { background: #1565C0; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-header h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
-header span { font-size: 13px; opacity: .8; }
-.container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
-.device-card { background: white; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-.device-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.device-name { font-size: 18px; font-weight: 600; }
-.badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.online  { background: #E8F5E9; color: #2E7D32; }
-.offline { background: #FFEBEE; color: #C62828; }
-.mode-box { background: #E3F2FD; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
-.mode-label { font-size: 12px; color: #1565C0; font-weight: 500; margin-bottom: 4px; }
-.mode-value { font-size: 22px; font-weight: 700; color: #1565C0; }
-.modes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
-.mode-btn { padding: 10px 8px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; text-align: center; }
-.mode-btn:hover  { border-color: #1565C0; color: #1565C0; }
-.mode-btn.active { border-color: #1565C0; background: #1565C0; color: white; }
-.mode-btn.danger { border-color: #C62828; }
-.mode-btn.danger:hover { background: #C62828; color: white; }
-.vannes-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px; }
-.vanne { background: #f5f5f5; border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; }
-.vanne .vname { font-weight: 600; margin-bottom: 4px; color: #555; }
-.vanne .vstate { font-size: 11px; }
-.vanne.ouvert  { background: #E8F5E9; }
-.vanne.ferme   { background: #FFEBEE; }
-.info-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.info-pill { background: #f0f4f8; border-radius: 20px; padding: 5px 14px; font-size: 13px; }
-.info-pill b { color: #1565C0; }
-.section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
-.last-seen { font-size: 12px; color: #aaa; margin-top: 8px; }
-.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f4f8; }
-.login-box { background: white; border-radius: 16px; padding: 36px; width: 100%; max-width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
-.login-box h2 { font-size: 22px; font-weight: 700; color: #1565C0; margin-bottom: 6px; }
-.login-box p  { color: #888; font-size: 14px; margin-bottom: 24px; }
-input { width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none; }
-input:focus { border-color: #1565C0; }
-.btn-login { width: 100%; padding: 13px; background: #1565C0; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
-.btn-login:hover { background: #1255a8; }
-.error-msg { color: #C62828; font-size: 13px; margin-top: 8px; text-align: center; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>FILTRBOX - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --purple: #8B5CF6; --pink: #EC4899; --orange: #F97316; --cyan: #06B6D4; --yellow: #FCD34D; }
+        body { font-family: 'Poppins', sans-serif; overflow: hidden; height: 100vh; }
+        .pages-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .pages-container::-webkit-scrollbar { display: none; }
+        .page { min-height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .page-1 { background: linear-gradient(135deg, var(--purple), var(--pink), var(--orange)); }
+        .page-2 { background: linear-gradient(135deg, var(--cyan), var(--purple)); }
+        .page-3 { background: linear-gradient(135deg, var(--pink), var(--orange)); }
+        .page-4 { background: linear-gradient(135deg, var(--purple), var(--cyan)); }
+        .page-5 { background: linear-gradient(135deg, var(--orange), var(--yellow)); }
+        .water-waves { position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; opacity: 0.25; pointer-events: none; }
+        .wave { position: absolute; bottom: 0; left: 0; width: 200%; height: 100%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.25'/%3E%3Cpath d='M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z' opacity='.5'/%3E%3Cpath d='M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z'/%3E%3C/svg%3E") repeat-x; background-size: 50% 100%; animation: wave 15s linear infinite; }
+        .wave:nth-child(2) { bottom: 10px; animation: wave 20s linear reverse infinite; opacity: 0.5; }
+        .wave:nth-child(3) { bottom: 20px; animation: wave 25s linear infinite; opacity: 0.3; }
+        @keyframes wave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .bubbles { position: absolute; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+        .bubble { position: absolute; bottom: -100px; background: rgba(255,255,255,0.2); border-radius: 50%; animation: rise 15s infinite ease-in; }
+        .bubble:nth-child(1) { left: 10%; animation-duration: 8s; width: 30px; height: 30px; }
+        .bubble:nth-child(2) { left: 20%; animation-duration: 12s; animation-delay: 2s; width: 50px; height: 50px; }
+        .bubble:nth-child(3) { left: 35%; animation-duration: 10s; animation-delay: 4s; width: 25px; height: 25px; }
+        .bubble:nth-child(4) { left: 50%; animation-duration: 15s; animation-delay: 1s; width: 35px; height: 35px; }
+        .bubble:nth-child(5) { left: 70%; animation-duration: 11s; animation-delay: 3s; width: 45px; height: 45px; }
+        .bubble:nth-child(6) { left: 85%; animation-duration: 9s; animation-delay: 5s; width: 30px; height: 30px; }
+        @keyframes rise { 0% { bottom: -100px; transform: translateX(0); opacity: 1; } 50% { transform: translateX(100px); } 100% { bottom: 110vh; transform: translateX(-100px); opacity: 0; } }
+        .page-content { flex: 1; padding: 25px 20px 20px; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; width: 100%; position: relative; z-index: 1; overflow-y: auto; }
+        .logo-wrap { text-align: center; margin-bottom: 16px; }
+        .logo { font-size: 36px; font-weight: 900; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -2px; margin-bottom: 4px; }
+        .tagline { font-size: 10px; color: rgba(255,255,255,0.9); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+        .admin-badge { display: inline-block; background: rgba(255,215,0,0.3); border: 1px solid gold; color: gold; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 4px; letter-spacing: 1px; }
+        .online-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .online-badge.online { background: rgba(0,255,148,0.3); color: #00FF94; border: 1px solid #00FF94; }
+        .online-badge.offline { background: rgba(255,68,68,0.3); color: #FF4444; border: 1px solid #FF4444; }
+
+        /* Sélecteur de prototype */
+        .device-selector { background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.3); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; }
+        .device-selector select { width: 100%; background: transparent; border: none; color: white; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; outline: none; cursor: pointer; }
+        .device-selector select option { background: #333; color: white; }
+
+        .stats-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat { background: rgba(255,255,255,0.2); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.3); border-radius: 18px; padding: 18px 14px; text-align: center; transition: transform 0.2s; }
+        .stat:active { transform: scale(0.95); }
+        .stat-icon { font-size: 32px; margin-bottom: 8px; }
+        .stat-label { font-size: 9px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .stat-value { font-size: 15px; font-weight: 900; color: white; }
+        .hydraulic-container { background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.3); border-radius: 18px; padding: 16px; margin-bottom: 16px; }
+        .hydraulic-title { font-size: 13px; font-weight: 700; color: white; text-align: center; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
+        #hydraulicCircuit { width: 100%; height: auto; }
+        .pipe { stroke: rgba(255,255,255,0.6); stroke-width: 3; fill: none; transition: all 0.5s; }
+        .pipe-active { stroke: #00FF94; stroke-width: 5; filter: drop-shadow(0 0 10px #00FF94); animation: glowPulse 2s ease-in-out infinite, flowWave 3s linear infinite; }
+        @keyframes glowPulse { 0%,100% { filter: drop-shadow(0 0 10px #00FF94); } 50% { filter: drop-shadow(0 0 15px #00FF94); } }
+        @keyframes flowWave { 0% { stroke-dasharray: 10 5; stroke-dashoffset: 0; } 100% { stroke-dashoffset: 15; } }
+        .valve polygon { transition: all 0.5s; }
+        .valve-open { fill: #00FF94 !important; filter: drop-shadow(0 0 8px #00FF94); animation: valvePulse 2s ease-in-out infinite; }
+        @keyframes valvePulse { 0%,100% { filter: drop-shadow(0 0 8px #00FF94); } 50% { filter: drop-shadow(0 0 12px #00FF94); } }
+        .valve-closed { fill: #FF4444 !important; }
+        .pump-active circle { animation: pumpRotate 2s linear infinite; transform-origin: 115px 27px; }
+        @keyframes pumpRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .flow-particle { fill: #00D9FF; filter: drop-shadow(0 0 6px #00D9FF); animation: particleFlow 3s ease-in-out infinite; }
+        @keyframes particleFlow { 0%,100% { opacity:0; } 10%,90% { opacity:1; } }
+        .swipe-hint { text-align: center; color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 700; padding: 12px; text-transform: uppercase; letter-spacing: 2px; animation: bounce 2s ease-in-out infinite; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .header { margin-bottom: 24px; }
+        .page-num { font-family: 'Space Grotesk', monospace; font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 10px; letter-spacing: 2px; }
+        .page-title { font-size: 32px; font-weight: 900; color: white; line-height: 1; margin-bottom: 8px; }
+        .page-desc { font-size: 13px; color: rgba(255,255,255,0.9); font-weight: 600; }
+        .control-section { background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.3); border-radius: 18px; padding: 18px; margin-bottom: 16px; }
+        .control-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 12px; }
+        .btn { background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4); border-radius: 14px; padding: 14px 20px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; width: 100%; margin-bottom: 10px; font-family: 'Poppins', sans-serif; }
+        .btn:active { transform: scale(0.95); }
+        .btn-active { background: rgba(0,255,148,0.3); border-color: #00FF94; box-shadow: 0 0 20px rgba(0,255,148,0.4); }
+        .time-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .time-input { flex: 1; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 12px; color: white; font-size: 16px; font-weight: 700; text-align: center; font-family: 'Space Grotesk', monospace; }
+        .toggle-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .toggle-label { font-size: 13px; color: white; font-weight: 600; }
+        .toggle { position: relative; width: 54px; height: 28px; background: rgba(255,255,255,0.2); border-radius: 14px; cursor: pointer; transition: background 0.3s; border: 2px solid rgba(255,255,255,0.3); }
+        .toggle.active { background: #00FF94; }
+        .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.3s; }
+        .toggle.active .toggle-thumb { transform: translateX(26px); }
+        .status-card { background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+        .status-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .status-row:last-child { border-bottom: none; }
+        .status-label { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 600; }
+        .status-value { font-size: 13px; color: white; font-weight: 700; }
+        .status-on { color: #00FF94; }
+        .status-off { color: #FF4444; }
+        .nav-dots { position: fixed; right: 14px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+        .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s; cursor: pointer; }
+        .nav-dot.active { background: white; transform: scale(1.4); }
+        .number-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .number-btn { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; color: white; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .number-btn:active { transform: scale(0.9); }
+        .number-display { flex: 1; text-align: center; font-size: 24px; font-weight: 900; color: white; font-family: 'Space Grotesk', monospace; }
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--purple), var(--pink), var(--orange)); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.3); border-radius: 24px; padding: 36px 28px; width: 90%; max-width: 360px; }
+        .login-logo { text-align: center; margin-bottom: 28px; }
+        .login-logo h2 { font-size: 36px; font-weight: 900; color: white; letter-spacing: -1px; }
+        .login-logo p { font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 3px; margin-top: 4px; }
+        .login-input { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 14px; color: white; font-size: 16px; font-family: 'Poppins', sans-serif; margin-bottom: 12px; outline: none; }
+        .login-input::placeholder { color: rgba(255,255,255,0.6); }
+        .login-btn { width: 100%; padding: 16px; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5); border-radius: 14px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .login-btn:active { transform: scale(0.97); }
+        .login-error { color: #FF4444; font-size: 13px; text-align: center; margin-top: 10px; min-height: 20px; }
+    </style>
 </head>
 <body>
 
-<div id="login-screen" class="login-screen">
-  <div class="login-box">
-    <h2>FILTRBOX</h2>
-    <p>Dashboard administrateur</p>
-    <input type="text"     id="username" placeholder="Identifiant" value="admin">
-    <input type="password" id="password" placeholder="Mot de passe" value="soseric">
-    <button class="btn-login" onclick="login()">Se connecter</button>
-    <div id="login-error" class="error-msg"></div>
-  </div>
-</div>
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <div class="login-logo">
+                <h2>FILTRBOX</h2>
+                <p>Admin Panel</p>
+            </div>
+            <input class="login-input" type="text"     id="loginUser" placeholder="Identifiant admin">
+            <input class="login-input" type="password" id="loginPass" placeholder="Mot de passe">
+            <button class="login-btn" onclick="doLogin()">Se connecter</button>
+            <div class="login-error" id="loginError"></div>
+        </div>
+    </div>
 
-<div id="app" style="display:none">
-  <header>
-    <h1>FILTRBOX — Admin</h1>
-    <span id="last-refresh">—</span>
-  </header>
-  <div class="container" id="devices-container">
-    <p style="color:#888;margin-top:20px">Chargement...</p>
-  </div>
-</div>
+    <div class="nav-dots">
+        <div class="nav-dot active" onclick="scrollToPage(0)"></div>
+        <div class="nav-dot" onclick="scrollToPage(1)"></div>
+        <div class="nav-dot" onclick="scrollToPage(2)"></div>
+        <div class="nav-dot" onclick="scrollToPage(3)"></div>
+        <div class="nav-dot" onclick="scrollToPage(4)"></div>
+    </div>
 
-<script>
-const API = "";
-let creds = { user: "", password: "" };
-const MODES = ["Filtration","Lavage","Rinçage","Recirculation","Vidange","Hivernage","Arrêt"];
+    <div class="pages-container" id="container">
+        <!-- PAGE 1: DASHBOARD -->
+        <div class="page page-1">
+            <div class="water-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+            <div class="page-content">
+                <div class="logo-wrap">
+                    <div class="logo">FILTRBOX</div>
+                    <div class="tagline">Admin Panel</div>
+                    <div class="admin-badge">ADMIN</div>
+                    <div><div class="online-badge offline" id="onlineBadge">Connexion...</div></div>
+                </div>
 
-function login() {
-  creds.user     = document.getElementById("username").value;
-  creds.password = document.getElementById("password").value;
-  fetch(`${API}/api/admin/devices?user=${creds.user}&password=${creds.password}`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) { document.getElementById("login-error").textContent = "Identifiants incorrects"; return; }
-      document.getElementById("login-screen").style.display = "none";
-      document.getElementById("app").style.display = "block";
-      startRefresh();
-    })
-    .catch(() => { document.getElementById("login-error").textContent = "Erreur de connexion"; });
-}
+                <div class="device-selector">
+                    <select id="deviceSelect" onchange="onDeviceChange()">
+                        <option value="">Chargement des prototypes...</option>
+                    </select>
+                </div>
 
-function sendCommand(deviceId, type, payload) {
-  fetch(`${API}/api/admin/command`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user: creds.user, password: creds.password, device_id: deviceId, command: { type, payload } })
-  }).then(() => setTimeout(refresh, 1000));
-}
+                <div class="stats-container">
+                    <div class="stat"><div class="stat-icon">⚙️</div><div class="stat-label">Mode</div><div class="stat-value" id="dashboard-mode">...</div></div>
+                    <div class="stat"><div class="stat-icon">💧</div><div class="stat-label">Pump</div><div class="stat-value" id="dashboard-pump">...</div></div>
+                    <div class="stat"><div class="stat-icon">⏰</div><div class="stat-label">Schedule</div><div class="stat-value" id="dashboard-schedule">...</div></div>
+                    <div class="stat"><div class="stat-icon">🔁</div><div class="stat-label">Cycle</div><div class="stat-value" id="dashboard-cycle">...</div></div>
+                </div>
 
-function refresh() {
-  fetch(`${API}/api/admin/devices?user=${creds.user}&password=${creds.password}`)
-    .then(r => r.json())
-    .then(renderDevices);
-  document.getElementById("last-refresh").textContent = "Mis à jour : " + new Date().toLocaleTimeString("fr-FR");
-}
+                <div class="hydraulic-container">
+                    <div class="hydraulic-title">🌊 Hydraulic Circuit</div>
+                    <svg id="hydraulicCircuit" viewBox="0 0 620 260" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="10" width="60" height="35" rx="5" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="2"/>
+                        <text x="40" y="32" text-anchor="middle" fill="white" font-size="12" font-weight="bold">POOL</text>
+                        <circle cx="115" cy="27" r="24" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="2"/>
+                        <text x="115" y="32" text-anchor="middle" fill="white" font-size="13" font-weight="bold">PUMP</text>
+                        <g id="v1" class="valve"><polygon points="220,18 235,27 220,36 205,27" class="valve-closed"/><text x="220" y="31" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V1</text></g>
+                        <g id="v2" class="valve"><polygon points="370,18 385,27 370,36 355,27" class="valve-closed"/><text x="370" y="31" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V2</text></g>
+                        <rect x="510" y="10" width="100" height="35" rx="5" fill="rgba(255,100,100,0.3)" stroke="white" stroke-width="2"/>
+                        <text x="560" y="32" text-anchor="middle" fill="white" font-size="12" font-weight="bold">WASTE</text>
+                        <rect x="265" y="78" width="60" height="72" rx="8" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="2"/>
+                        <circle cx="295" cy="98" r="8" fill="rgba(255,255,255,0.5)"/>
+                        <circle cx="295" cy="130" r="8" fill="rgba(255,255,255,0.5)"/>
+                        <text x="295" y="119" text-anchor="middle" fill="white" font-size="11" font-weight="bold">FILTER</text>
+                        <g id="v3" class="valve"><polygon points="200,198 215,207 200,216 185,207" class="valve-closed"/><text x="200" y="211" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V3</text></g>
+                        <g id="v4" class="valve"><polygon points="285,170 295,180 305,170 295,160" class="valve-closed"/><text x="295" y="174" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V4</text></g>
+                        <g id="v5" class="valve"><polygon points="435,110 450,119 435,128 420,119" class="valve-closed"/><text x="435" y="123" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V5</text></g>
+                        <g id="v6" class="valve"><polygon points="460,198 475,207 460,216 445,207" class="valve-closed"/><text x="460" y="211" text-anchor="middle" fill="white" font-size="11" font-weight="bold">V6</text></g>
+                        <rect x="510" y="190" width="100" height="35" rx="5" fill="rgba(100,200,255,0.3)" stroke="white" stroke-width="2"/>
+                        <text x="560" y="212" text-anchor="middle" fill="white" font-size="12" font-weight="bold">POOL</text>
+                        <path d="M 70 27 L 91 27" class="pipe" id="pipe-pool-pump"/>
+                        <path d="M 139 27 L 165 27" class="pipe" id="pipe-pump-junction"/>
+                        <path d="M 165 27 L 205 27" class="pipe" id="pipe-junction-v1"/>
+                        <path d="M 235 27 L 295 27" class="pipe" id="pipe-v1-filter"/>
+                        <path d="M 295 27 L 355 27" class="pipe" id="pipe-filter-v2"/>
+                        <path d="M 385 27 L 445 27" class="pipe" id="pipe-v2-junctionwaste"/>
+                        <path d="M 445 27 L 510 27" class="pipe" id="pipe-junctionwaste-waste"/>
+                        <path d="M 215 207 L 285 207" class="pipe" id="pipe-v3-junction"/>
+                        <path d="M 305 207 L 435 207" class="pipe" id="pipe-junction-junction2"/>
+                        <path d="M 435 207 L 445 207" class="pipe" id="pipe-junction2-v6"/>
+                        <path d="M 475 207 L 510 207" class="pipe" id="pipe-v6-pool"/>
+                        <path d="M 165 27 L 165 207 L 185 207" class="pipe" id="pipe-junction-v3"/>
+                        <path d="M 295 27 L 295 78" class="pipe" id="pipe-v1v2-filter"/>
+                        <path d="M 295 150 L 295 160" class="pipe" id="pipe-filter-v4-top"/>
+                        <path d="M 295 180 L 295 207" class="pipe" id="pipe-v4-junction"/>
+                        <path d="M 445 27 L 445 110" class="pipe" id="pipe-v2waste-v5-top"/>
+                        <path d="M 445 128 L 445 207" class="pipe" id="pipe-v5-junction2"/>
+                        <circle class="flow-particle" r="5" cx="100" cy="27" opacity="0"/>
+                        <circle class="flow-particle" r="5" cx="150" cy="27" opacity="0"/>
+                        <circle class="flow-particle" r="4" cx="200" cy="27" opacity="0"/>
+                        <circle class="flow-particle" r="4" cx="295" cy="100" opacity="0"/>
+                        <circle class="flow-particle" r="5" cx="295" cy="150" opacity="0"/>
+                        <circle class="flow-particle" r="4" cx="400" cy="207" opacity="0"/>
+                    </svg>
+                </div>
+                <div class="swipe-hint">↓ Swipe ↓</div>
+            </div>
+        </div>
 
-function renderDevices(devices) {
-  const container = document.getElementById("devices-container");
-  if (!Object.keys(devices).length) { container.innerHTML = "<p style='color:#888;margin-top:20px'>Aucun prototype enregistré.</p>"; return; }
-  container.innerHTML = Object.entries(devices).map(([id, dev]) => {
-    const st = dev.status || {};
-    const vannes = st.vannes || {};
-    const vannHTML = Object.entries(vannes).map(([v, s]) => {
-      const cls = s.ouvert ? "ouvert" : s.ferme ? "ferme" : "";
-      const label = s.ouvert ? "Ouvert" : s.ferme ? "Fermé" : "—";
-      return `<div class="vanne ${cls}"><div class="vname">${v}</div><div class="vstate">${label}</div></div>`;
-    }).join("");
-    const modeHTML = MODES.map(m => {
-      const active = st.mode === m ? "active" : "";
-      const danger = m === "Arrêt" ? "danger" : "";
-      return `<button class="mode-btn ${active} ${danger}" onclick="sendCommand('${id}','mode','${m}')">${m}</button>`;
-    }).join("");
-    const lastSeen = dev.last_seen ? new Date(dev.last_seen).toLocaleString("fr-FR") : "jamais";
-    return `
-    <div class="device-card">
-      <div class="device-header">
-        <div class="device-name">${dev.name || id}</div>
-        <span class="badge ${dev.online ? 'online' : 'offline'}">${dev.online ? "En ligne" : "Hors ligne"}</span>
-      </div>
-      <div class="mode-box">
-        <div class="mode-label">Mode actuel</div>
-        <div class="mode-value">${st.mode || "—"}</div>
-      </div>
-      <div class="info-row">
-        <div class="info-pill">Pompe : <b>${st.pompe ? "ON" : "OFF"}</b></div>
-        <div class="info-pill">AUX : <b>${st.aux ? "ON" : "OFF"}</b></div>
-        <div class="info-pill">Prog : <b>${st.prog?.active ? "Active" : "Inactive"}</b></div>
-        <div class="info-pill">Cycle : <b>${st.cycle?.active ? "Actif" : "Inactif"}</b></div>
-      </div>
-      <div class="section-title">Vannes</div>
-      <div class="vannes-grid">${vannHTML}</div>
-      <div class="section-title">Envoyer une commande</div>
-      <div class="modes-grid">${modeHTML}</div>
-      <div class="last-seen">Dernière communication : ${lastSeen}</div>
-    </div>`;
-  }).join("");
-}
+        <!-- PAGE 2: FILTRATION SCHEDULE -->
+        <div class="page page-2">
+            <div class="water-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+            <div class="page-content">
+                <div class="header">
+                    <div class="page-num">[02/05]</div>
+                    <div class="page-title">Filtration<br>Schedule</div>
+                    <div class="page-desc">Automatic timing</div>
+                </div>
+                <div class="control-section">
+                    <div class="toggle-group">
+                        <div class="toggle-label">Schedule Active</div>
+                        <div class="toggle" id="schedule-toggle" onclick="toggleSchedule()"><div class="toggle-thumb"></div></div>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Start Time</div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="start-time" value="08:00"></div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">End Time</div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="end-time" value="18:00"></div>
+                </div>
+                <button class="btn" onclick="saveSchedule()">💾 Save Schedule</button>
+            </div>
+        </div>
 
-function startRefresh() { refresh(); setInterval(refresh, 10000); }
-</script>
+        <!-- PAGE 3: WASH CYCLE -->
+        <div class="page page-3">
+            <div class="water-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+            <div class="page-content">
+                <div class="header">
+                    <div class="page-num">[03/05]</div>
+                    <div class="page-title">Wash<br>Cycle</div>
+                    <div class="page-desc">Maintenance routine</div>
+                </div>
+                <div class="control-section">
+                    <div class="toggle-group">
+                        <div class="toggle-label">Auto Cycle Active</div>
+                        <div class="toggle" id="cycle-toggle" onclick="toggleCycle()"><div class="toggle-thumb"></div></div>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Start Time</div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="cycle-time" value="10:00"></div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Wash Duration</div>
+                    <div style="display:flex;gap:10px;margin-bottom:8px;">
+                        <div style="flex:1;">
+                            <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:6px;text-align:center;">Minutes</div>
+                            <div class="number-control">
+                                <div class="number-btn" onclick="adjustWashMin(-1)">−</div>
+                                <div class="number-display" id="wash-min" style="font-size:20px;">5</div>
+                                <div class="number-btn" onclick="adjustWashMin(1)">+</div>
+                            </div>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:6px;text-align:center;">Seconds</div>
+                            <div class="number-control">
+                                <div class="number-btn" onclick="adjustWashSec(-5)">−</div>
+                                <div class="number-display" id="wash-sec" style="font-size:20px;">0</div>
+                                <div class="number-btn" onclick="adjustWashSec(5)">+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Rinse Duration (sec)</div>
+                    <div class="number-control">
+                        <div class="number-btn" onclick="adjustRinseSec(-5)">−</div>
+                        <div class="number-display" id="rinse-sec">45</div>
+                        <div class="number-btn" onclick="adjustRinseSec(5)">+</div>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Repeat Every (days)</div>
+                    <div class="number-control">
+                        <div class="number-btn" onclick="adjustFrequency(-1)">−</div>
+                        <div class="number-display" id="frequency-days">7</div>
+                        <div class="number-btn" onclick="adjustFrequency(1)">+</div>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveCycle()">💾 Save Cycle</button>
+            </div>
+        </div>
+
+        <!-- PAGE 4: SYSTEM STATUS -->
+        <div class="page page-4">
+            <div class="water-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+            <div class="page-content">
+                <div class="header">
+                    <div class="page-num">[04/05]</div>
+                    <div class="page-title">System<br>Status</div>
+                    <div class="page-desc">Live monitoring</div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Valves Status</div>
+                    <div class="status-card">
+                        <div class="status-row"><div class="status-label">V1</div><div class="status-value" id="status-v1">-</div></div>
+                        <div class="status-row"><div class="status-label">V2</div><div class="status-value" id="status-v2">-</div></div>
+                        <div class="status-row"><div class="status-label">V3</div><div class="status-value" id="status-v3">-</div></div>
+                        <div class="status-row"><div class="status-label">V4</div><div class="status-value" id="status-v4">-</div></div>
+                        <div class="status-row"><div class="status-label">V5</div><div class="status-value" id="status-v5">-</div></div>
+                        <div class="status-row"><div class="status-label">V6</div><div class="status-value" id="status-v6">-</div></div>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Equipment</div>
+                    <div class="status-card">
+                        <div class="status-row"><div class="status-label">Pump</div><div class="status-value" id="status-pump">-</div></div>
+                        <div class="status-row"><div class="status-label">Auxiliary</div><div class="status-value" id="status-aux">-</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 5: MANUAL CONTROL -->
+        <div class="page page-5">
+            <div class="water-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+            <div class="page-content">
+                <div class="header">
+                    <div class="page-num">[05/05]</div>
+                    <div class="page-title">Manual<br>Control</div>
+                    <div class="page-desc">Direct operation</div>
+                </div>
+                <div class="control-section">
+                    <div class="control-title">Operating Modes</div>
+                    <button class="btn" id="mode-filtration"    onclick="setMode('Filtration')">💧 Filtration</button>
+                    <button class="btn" id="mode-lavage"        onclick="setMode('Lavage')">🧹 Wash</button>
+                    <button class="btn" id="mode-rincage"       onclick="setMode('Rinçage')">💦 Rinse</button>
+                    <button class="btn" id="mode-recirculation" onclick="setMode('Recirculation')">🔁 Recirculation</button>
+                    <button class="btn" id="mode-vidange"       onclick="setMode('Vidange')">🚰 Drain</button>
+                    <button class="btn" id="mode-hivernage"     onclick="setMode('Hivernage')">❄️ Winterize</button>
+                    <button class="btn" id="mode-arret"         onclick="setMode('Arrêt')">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_API  = "";
+        let creds        = { user: "", password: "" };
+        let allDevices   = {};
+        let selectedId   = "";
+        let currentStatus = {};
+
+        // ── Login ────────────────────────────────────────────────
+        async function doLogin() {
+            creds.user     = document.getElementById("loginUser").value.trim();
+            creds.password = document.getElementById("loginPass").value;
+            document.getElementById("loginError").textContent = "";
+            try {
+                const r = await fetch(`${CLOUD_API}/api/admin/devices?user=${creds.user}&password=${creds.password}`);
+                const d = await r.json();
+                if (d.error) { document.getElementById("loginError").textContent = "Accès admin requis"; return; }
+                document.getElementById("loginScreen").style.display = "none";
+                allDevices = d;
+                populateSelector(d);
+                fetchStatus();
+                setInterval(fetchStatus, 3000);
+            } catch(e) {
+                document.getElementById("loginError").textContent = "Erreur de connexion";
+            }
+        }
+
+        // ── Sélecteur de prototype ───────────────────────────────
+        function populateSelector(devices) {
+            const sel = document.getElementById("deviceSelect");
+            sel.innerHTML = "";
+            const ids = Object.keys(devices);
+            if (!ids.length) { sel.innerHTML = "<option>Aucun prototype connecté</option>"; return; }
+            ids.forEach(id => {
+                const opt = document.createElement("option");
+                opt.value = id;
+                opt.textContent = `${devices[id].name || id} ${devices[id].online ? "🟢" : "🔴"}`;
+                sel.appendChild(opt);
+            });
+            selectedId = ids[0];
+        }
+
+        function onDeviceChange() {
+            selectedId = document.getElementById("deviceSelect").value;
+            updateUI();
+        }
+
+        // ── Fetch ────────────────────────────────────────────────
+        async function fetchStatus() {
+            try {
+                const r = await fetch(`${CLOUD_API}/api/admin/devices?user=${creds.user}&password=${creds.password}`);
+                allDevices = await r.json();
+                populateSelector(allDevices);
+                if (!selectedId && Object.keys(allDevices).length) selectedId = Object.keys(allDevices)[0];
+                const dev = allDevices[selectedId];
+                if (!dev) return;
+                currentStatus = dev.status || {};
+                updateOnlineBadge(dev.online);
+                updateUI();
+            } catch(e) { updateOnlineBadge(false); }
+        }
+
+        function updateOnlineBadge(online) {
+            const b = document.getElementById("onlineBadge");
+            b.textContent = online ? "En ligne" : "Hors ligne";
+            b.className   = "online-badge " + (online ? "online" : "offline");
+        }
+
+        // ── UI ───────────────────────────────────────────────────
+        function updateUI() {
+            document.getElementById("dashboard-mode").textContent     = currentStatus.mode    || "N/A";
+            document.getElementById("dashboard-pump").textContent     = currentStatus.pompe   ? "ON" : "OFF";
+            document.getElementById("dashboard-schedule").textContent = currentStatus.prog?.active  ? "Active" : "Inactive";
+            document.getElementById("dashboard-cycle").textContent    = currentStatus.cycle?.active ? "Active" : "Off";
+            updateCircuit();
+            const st = document.getElementById("schedule-toggle");
+            currentStatus.prog?.active ? st.classList.add("active") : st.classList.remove("active");
+            if (currentStatus.prog?.heure_debut) document.getElementById("start-time").value = currentStatus.prog.heure_debut;
+            if (currentStatus.prog?.heure_fin)   document.getElementById("end-time").value   = currentStatus.prog.heure_fin;
+            const ct = document.getElementById("cycle-toggle");
+            currentStatus.cycle?.active ? ct.classList.add("active") : ct.classList.remove("active");
+            if (currentStatus.cycle?.heure)       document.getElementById("cycle-time").value         = currentStatus.cycle.heure;
+            if (currentStatus.cycle?.lavage_min  !== undefined) document.getElementById("wash-min").textContent  = currentStatus.cycle.lavage_min;
+            if (currentStatus.cycle?.lavage_sec  !== undefined) document.getElementById("wash-sec").textContent  = currentStatus.cycle.lavage_sec;
+            if (currentStatus.cycle?.rincage_sec !== undefined) document.getElementById("rinse-sec").textContent = currentStatus.cycle.rincage_sec;
+            const vannes = currentStatus.vannes || {};
+            ["V1","V2","V3","V4","V5","V6"].forEach(v => {
+                const el = document.getElementById(`status-${v.toLowerCase()}`);
+                const d  = vannes[v];
+                const open = typeof d === "number" ? d === 1 : d?.ouvert === true;
+                el.textContent = open ? "OPEN" : "CLOSED";
+                el.className   = open ? "status-value status-on" : "status-value status-off";
+            });
+            document.getElementById("status-pump").textContent = currentStatus.pompe ? "ON" : "OFF";
+            document.getElementById("status-pump").className   = currentStatus.pompe ? "status-value status-on" : "status-value status-off";
+            document.getElementById("status-aux").textContent  = currentStatus.aux   ? "ON" : "OFF";
+            document.getElementById("status-aux").className    = currentStatus.aux   ? "status-value status-on" : "status-value status-off";
+            ["filtration","lavage","rincage","recirculation","vidange","hivernage","arret"].forEach(m => {
+                const btn = document.getElementById(`mode-${m}`);
+                if (!btn) return;
+                const active = currentStatus.mode?.toLowerCase() === m ||
+                               (m === "rincage" && currentStatus.mode === "Rinçage") ||
+                               (m === "arret"   && currentStatus.mode === "Arrêt");
+                btn.classList.toggle("btn-active", active);
+            });
+        }
+
+        function updateCircuit() {
+            const vannes = currentStatus.vannes || {};
+            const pump   = currentStatus.pompe;
+            const mode   = currentStatus.mode || "Arrêt";
+            const pumpEl = document.querySelector("#hydraulicCircuit circle");
+            pump ? pumpEl.parentElement.classList.add("pump-active") : pumpEl.parentElement.classList.remove("pump-active");
+            ["v1","v2","v3","v4","v5","v6"].forEach((v,i) => {
+                const valve = document.getElementById(v);
+                const d     = vannes[`V${i+1}`];
+                const open  = typeof d === "number" ? d === 1 : d?.ouvert === true;
+                const poly  = valve.querySelector("polygon");
+                poly.classList.toggle("valve-open",   open);
+                poly.classList.toggle("valve-closed", !open);
+            });
+            document.querySelectorAll(".pipe").forEach(p => p.classList.remove("pipe-active"));
+            if (!pump) return;
+            document.getElementById("pipe-pool-pump")?.classList.add("pipe-active");
+            document.getElementById("pipe-pump-junction")?.classList.add("pipe-active");
+            const v = {};
+            ["V1","V2","V3","V4","V5","V6"].forEach(k => { const d=vannes[k]; v[k]=typeof d==="number"?d===1:d?.ouvert===true; });
+            if (mode === "Filtration") {
+                if (v.V1) ["pipe-junction-v1","pipe-v1-filter","pipe-v1v2-filter","pipe-filter-v4-top"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V4) document.getElementById("pipe-v4-junction")?.classList.add("pipe-active");
+                if (v.V6) ["pipe-junction-junction2","pipe-junction2-v6","pipe-v6-pool"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+            } else if (mode === "Lavage") {
+                if (v.V3) ["pipe-junction-v3","pipe-v3-junction"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V4) ["pipe-v4-junction","pipe-filter-v4-top","pipe-v1v2-filter"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V2) ["pipe-filter-v2","pipe-v2-junctionwaste","pipe-junctionwaste-waste"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+            } else if (mode === "Rinçage") {
+                if (v.V1) ["pipe-junction-v1","pipe-v1-filter","pipe-v1v2-filter","pipe-filter-v4-top"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V4) ["pipe-v4-junction","pipe-junction-junction2"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V5) ["pipe-v5-junction2","pipe-v2waste-v5-top","pipe-junctionwaste-waste"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+            } else if (mode === "Recirculation") {
+                if (v.V3) ["pipe-junction-v3","pipe-v3-junction"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V6) ["pipe-junction-junction2","pipe-junction2-v6","pipe-v6-pool"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+            } else if (mode === "Vidange") {
+                if (v.V3) ["pipe-junction-v3","pipe-v3-junction"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+                if (v.V5) ["pipe-junction-junction2","pipe-v5-junction2","pipe-v2waste-v5-top","pipe-junctionwaste-waste"].forEach(id=>document.getElementById(id)?.classList.add("pipe-active"));
+            }
+        }
+
+        // ── Commands ─────────────────────────────────────────────
+        async function sendCommand(type, payload) {
+            await fetch(`${CLOUD_API}/api/admin/command`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user: creds.user, password: creds.password, device_id: selectedId, command: { type, payload } })
+            });
+            setTimeout(fetchStatus, 1500);
+        }
+
+        async function setMode(mode)    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("mode", mode); }
+        async function toggleSchedule() { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("programmation", { active: !currentStatus.prog?.active, heure_debut: currentStatus.prog?.heure_debut, heure_fin: currentStatus.prog?.heure_fin }); }
+        async function saveSchedule()   { if(navigator.vibrate)navigator.vibrate([30,50,30]); await sendCommand("programmation", { active: currentStatus.prog?.active, heure_debut: document.getElementById("start-time").value, heure_fin: document.getElementById("end-time").value }); alert("Schedule saved!"); }
+        async function toggleCycle()    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("cycle", { active: !currentStatus.cycle?.active }); }
+        async function saveCycle()      { if(navigator.vibrate)navigator.vibrate([30,50,30]); await sendCommand("cycle", { active: currentStatus.cycle?.active, heure: document.getElementById("cycle-time").value, lavage_min: parseInt(document.getElementById("wash-min").textContent), lavage_sec: parseInt(document.getElementById("wash-sec").textContent), rincage_sec: parseInt(document.getElementById("rinse-sec").textContent), freq_jours: parseInt(document.getElementById("frequency-days").textContent) }); alert("Cycle saved!"); }
+
+        function adjustWashMin(d)   { const el=document.getElementById("wash-min");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustWashSec(d)   { const el=document.getElementById("wash-sec");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(59,v));  if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustRinseSec(d)  { const el=document.getElementById("rinse-sec");      let v=parseInt(el.textContent)+d; el.textContent=Math.max(15,Math.min(300,v)); if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustFrequency(d) { const el=document.getElementById("frequency-days"); let v=parseInt(el.textContent)+d; el.textContent=Math.max(1,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
+
+        const container = document.getElementById("container");
+        const dots = document.querySelectorAll(".nav-dot");
+        container.addEventListener("scroll", () => {
+            const page = Math.round(container.scrollTop / window.innerHeight);
+            dots.forEach((d,i) => d.classList.toggle("active", i===page));
+        });
+        function scrollToPage(i) { if(navigator.vibrate)navigator.vibrate(10); container.scrollTo({ top: i*window.innerHeight, behavior: "smooth" }); }
+    </script>
 </body>
 </html>
