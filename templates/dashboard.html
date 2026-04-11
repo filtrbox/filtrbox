@@ -512,8 +512,26 @@
         }
 
         async function setMode(mode)    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("mode", mode); }
-        async function toggleSchedule() { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("programmation", { active: !currentStatus.prog?.active, heure_debut: currentStatus.prog?.heure_debut, heure_fin: currentStatus.prog?.heure_fin }); }
-        async function saveSchedule()   { if(navigator.vibrate)navigator.vibrate([30,50,30]); await sendCommand("programmation", { active: currentStatus.prog?.active, heure_debut: document.getElementById("start-time").value, heure_fin: document.getElementById("end-time").value }); alert("Schedule saved!"); }
+        async function toggleSchedule() {
+            if(navigator.vibrate)navigator.vibrate(20);
+            const newActive = !document.getElementById("schedule-toggle").classList.contains("active");
+            document.getElementById("schedule-toggle").classList.toggle("active", newActive);
+            await sendCommand("programmation", {
+                active: newActive,
+                heure_debut: document.getElementById("start-time").value || currentStatus.prog?.heure_debut,
+                heure_fin: document.getElementById("end-time").value || currentStatus.prog?.heure_fin
+            });
+        }
+        async function saveSchedule() {
+            if(navigator.vibrate)navigator.vibrate([30,50,30]);
+            const active = document.getElementById("schedule-toggle").classList.contains("active");
+            await sendCommand("programmation", {
+                active: active,
+                heure_debut: document.getElementById("start-time").value,
+                heure_fin: document.getElementById("end-time").value
+            });
+            alert("Schedule saved!");
+        }
         async function toggleCycle()    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("cycle", { active: !currentStatus.cycle?.active }); }
         async function saveCycle()      { if(navigator.vibrate)navigator.vibrate([30,50,30]); await sendCommand("cycle", { active: currentStatus.cycle?.active, heure: document.getElementById("cycle-time").value, lavage_min: parseInt(document.getElementById("wash-min").textContent), lavage_sec: parseInt(document.getElementById("wash-sec").textContent), rincage_sec: parseInt(document.getElementById("rinse-sec").textContent), freq_jours: parseInt(document.getElementById("frequency-days").textContent) }); alert("Cycle saved!"); }
 
