@@ -228,11 +228,11 @@
                 </div>
                 <div class="control-section">
                     <div class="control-title">Start Time</div>
-                    <div class="time-input-group"><input type="time" class="time-input" id="start-time" value="08:00"></div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="start-time" value="08:00" onfocus="progEditing=true"></div>
                 </div>
                 <div class="control-section">
                     <div class="control-title">End Time</div>
-                    <div class="time-input-group"><input type="time" class="time-input" id="end-time" value="18:00"></div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="end-time" value="18:00" onfocus="progEditing=true"></div>
                 </div>
                 <button class="btn" onclick="saveSchedule()">💾 Save Schedule</button>
             </div>
@@ -360,6 +360,8 @@
         let allDevices   = {};
         let selectedId   = "";
         let currentStatus = {};
+        let progEditing = false;
+        let cycleEditing = false;
 
         // ── Login ────────────────────────────────────────────────
         async function doLogin() {
@@ -430,14 +432,14 @@
             updateCircuit();
             const st = document.getElementById("schedule-toggle");
             currentStatus.prog?.active ? st.classList.add("active") : st.classList.remove("active");
-            if (currentStatus.prog?.heure_debut) document.getElementById("start-time").value = currentStatus.prog.heure_debut;
-            if (currentStatus.prog?.heure_fin)   document.getElementById("end-time").value   = currentStatus.prog.heure_fin;
+            if (currentStatus.prog?.heure_debut && !progEditing) document.getElementById("start-time").value = currentStatus.prog.heure_debut;
+            if (currentStatus.prog?.heure_fin && !progEditing) document.getElementById("end-time").value = currentStatus.prog.heure_fin;
             const ct = document.getElementById("cycle-toggle");
             currentStatus.cycle?.active ? ct.classList.add("active") : ct.classList.remove("active");
-            if (currentStatus.cycle?.heure)       document.getElementById("cycle-time").value         = currentStatus.cycle.heure;
-            if (currentStatus.cycle?.lavage_min  !== undefined) document.getElementById("wash-min").textContent  = currentStatus.cycle.lavage_min;
-            if (currentStatus.cycle?.lavage_sec  !== undefined) document.getElementById("wash-sec").textContent  = currentStatus.cycle.lavage_sec;
-            if (currentStatus.cycle?.rincage_sec !== undefined) document.getElementById("rinse-sec").textContent = currentStatus.cycle.rincage_sec;
+            if (currentStatus.cycle?.heure && document.activeElement.id !== "cycle-time") document.getElementById("cycle-time").value = currentStatus.cycle.heure;
+            if (currentStatus.cycle?.lavage_min  !== undefined && document.activeElement.id !== "wash-min")  document.getElementById("wash-min").textContent  = currentStatus.cycle.lavage_min;
+            if (currentStatus.cycle?.lavage_sec  !== undefined && document.activeElement.id !== "wash-sec")  document.getElementById("wash-sec").textContent  = currentStatus.cycle.lavage_sec;
+            if (currentStatus.cycle?.rincage_sec !== undefined && document.activeElement.id !== "rinse-sec") document.getElementById("rinse-sec").textContent  = currentStatus.cycle.rincage_sec;
             const vannes = currentStatus.vannes || {};
             ["V1","V2","V3","V4","V5","V6"].forEach(v => {
                 const el = document.getElementById(`status-${v.toLowerCase()}`);
@@ -530,6 +532,7 @@
                 heure_debut: document.getElementById("start-time").value,
                 heure_fin: document.getElementById("end-time").value
             });
+            progEditing = false;
             alert("Schedule saved!");
         }
         async function toggleCycle()    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("cycle", { active: !currentStatus.cycle?.active }); }
