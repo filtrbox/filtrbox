@@ -1,0 +1,5 @@
+filtrbox_db.json
+config_secret.py
+venv/
+__pycache__/
+*.pyc

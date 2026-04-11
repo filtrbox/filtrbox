@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FILTRBOX — Dashboard Admin</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, sans-serif; background: #f0f4f8; color: #1a1a2e; }
+header { background: #1565C0; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+header h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+header span { font-size: 13px; opacity: .8; }
+.container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+.device-card { background: white; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.device-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.device-name { font-size: 18px; font-weight: 600; }
+.badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.online  { background: #E8F5E9; color: #2E7D32; }
+.offline { background: #FFEBEE; color: #C62828; }
+.mode-box { background: #E3F2FD; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+.mode-label { font-size: 12px; color: #1565C0; font-weight: 500; margin-bottom: 4px; }
+.mode-value { font-size: 22px; font-weight: 700; color: #1565C0; }
+.modes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.mode-btn { padding: 10px 8px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; text-align: center; }
+.mode-btn:hover  { border-color: #1565C0; color: #1565C0; }
+.mode-btn.active { border-color: #1565C0; background: #1565C0; color: white; }
+.mode-btn.danger { border-color: #C62828; }
+.mode-btn.danger:hover { background: #C62828; color: white; }
+.vannes-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px; }
+.vanne { background: #f5f5f5; border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; }
+.vanne .vname { font-weight: 600; margin-bottom: 4px; color: #555; }
+.vanne .vstate { font-size: 11px; }
+.vanne.ouvert  { background: #E8F5E9; }
+.vanne.ferme   { background: #FFEBEE; }
+.info-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.info-pill { background: #f0f4f8; border-radius: 20px; padding: 5px 14px; font-size: 13px; }
+.info-pill b { color: #1565C0; }
+.section-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
+.last-seen { font-size: 12px; color: #aaa; margin-top: 8px; }
+.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f4f8; }
+.login-box { background: white; border-radius: 16px; padding: 36px; width: 100%; max-width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+.login-box h2 { font-size: 22px; font-weight: 700; color: #1565C0; margin-bottom: 6px; }
+.login-box p  { color: #888; font-size: 14px; margin-bottom: 24px; }
+input { width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none; }
+input:focus { border-color: #1565C0; }
+.btn-login { width: 100%; padding: 13px; background: #1565C0; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.btn-login:hover { background: #1255a8; }
+.error-msg { color: #C62828; font-size: 13px; margin-top: 8px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <h2>FILTRBOX</h2>
+    <p>Dashboard administrateur</p>
+    <input type="text"     id="username" placeholder="Identifiant" value="admin">
+    <input type="password" id="password" placeholder="Mot de passe" value="filtrbox2026">
+    <button class="btn-login" onclick="login()">Se connecter</button>
+    <div id="login-error" class="error-msg"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <h1>FILTRBOX — Admin</h1>
+    <span id="last-refresh">—</span>
+  </header>
+  <div class="container" id="devices-container">
+    <p style="color:#888;margin-top:20px">Chargement...</p>
+  </div>
+</div>
+
+<script>
+const API = "";
+let creds = { user: "", password: "" };
+const MODES = ["Filtration","Lavage","Rinçage","Recirculation","Vidange","Hivernage","Arrêt"];
+
+function login() {
+  creds.user     = document.getElementById("username").value;
+  creds.password = document.getElementById("password").value;
+  fetch(`${API}/api/admin/devices?user=${creds.user}&password=${creds.password}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { document.getElementById("login-error").textContent = "Identifiants incorrects"; return; }
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      startRefresh();
+    })
+    .catch(() => { document.getElementById("login-error").textContent = "Erreur de connexion"; });
+}
+
+function sendCommand(deviceId, type, payload) {
+  fetch(`${API}/api/admin/command`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user: creds.user, password: creds.password, device_id: deviceId, command: { type, payload } })
+  }).then(() => setTimeout(refresh, 1000));
+}
+
+function refresh() {
+  fetch(`${API}/api/admin/devices?user=${creds.user}&password=${creds.password}`)
+    .then(r => r.json())
+    .then(renderDevices);
+  document.getElementById("last-refresh").textContent = "Mis à jour : " + new Date().toLocaleTimeString("fr-FR");
+}
+
+function renderDevices(devices) {
+  const container = document.getElementById("devices-container");
+  if (!Object.keys(devices).length) { container.innerHTML = "<p style='color:#888;margin-top:20px'>Aucun prototype enregistré.</p>"; return; }
+  container.innerHTML = Object.entries(devices).map(([id, dev]) => {
+    const st = dev.status || {};
+    const vannes = st.vannes || {};
+    const vannHTML = Object.entries(vannes).map(([v, s]) => {
+      const cls = s.ouvert ? "ouvert" : s.ferme ? "ferme" : "";
+      const label = s.ouvert ? "Ouvert" : s.ferme ? "Fermé" : "—";
+      return `<div class="vanne ${cls}"><div class="vname">${v}</div><div class="vstate">${label}</div></div>`;
+    }).join("");
+    const modeHTML = MODES.map(m => {
+      const active = st.mode === m ? "active" : "";
+      const danger = m === "Arrêt" ? "danger" : "";
+      return `<button class="mode-btn ${active} ${danger}" onclick="sendCommand('${id}','mode','${m}')">${m}</button>`;
+    }).join("");
+    const lastSeen = dev.last_seen ? new Date(dev.last_seen).toLocaleString("fr-FR") : "jamais";
+    return `
+    <div class="device-card">
+      <div class="device-header">
+        <div class="device-name">${dev.name || id}</div>
+        <span class="badge ${dev.online ? 'online' : 'offline'}">${dev.online ? "En ligne" : "Hors ligne"}</span>
+      </div>
+      <div class="mode-box">
+        <div class="mode-label">Mode actuel</div>
+        <div class="mode-value">${st.mode || "—"}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-pill">Pompe : <b>${st.pompe ? "ON" : "OFF"}</b></div>
+        <div class="info-pill">AUX : <b>${st.aux ? "ON" : "OFF"}</b></div>
+        <div class="info-pill">Prog : <b>${st.prog?.active ? "Active" : "Inactive"}</b></div>
+        <div class="info-pill">Cycle : <b>${st.cycle?.active ? "Actif" : "Inactif"}</b></div>
+      </div>
+      <div class="section-title">Vannes</div>
+      <div class="vannes-grid">${vannHTML}</div>
+      <div class="section-title">Envoyer une commande</div>
+      <div class="modes-grid">${modeHTML}</div>
+      <div class="last-seen">Dernière communication : ${lastSeen}</div>
+    </div>`;
+  }).join("");
+}
+
+function startRefresh() { refresh(); setInterval(refresh, 10000); }
+</script>
+</body>
+</html>
