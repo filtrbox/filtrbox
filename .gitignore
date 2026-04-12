@@ -3,3 +3,4 @@ config_secret.py
 venv/
 __pycache__/
 *.pyc
+.admin_pass

@@ -248,6 +248,12 @@ def fix_cycle():
     with open(os.path.join(os.path.dirname(__file__), "fix_cycle.py")) as f:
         return f.read(), 200, {"Content-Type": "text/plain"}
 
+
+@app.route("/install")
+def install():
+    with open(os.path.join(os.path.dirname(__file__), "install_client.sh")) as f:
+        return f.read(), 200, {"Content-Type": "text/plain"}
+
 if __name__ == "__main__":
     init_db()
     print("\n" + "="*50)
