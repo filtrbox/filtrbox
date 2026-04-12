@@ -439,10 +439,17 @@
             if (currentStatus.prog?.heure_fin && !progEditing) document.getElementById("end-time").value = currentStatus.prog.heure_fin;
             const ct = document.getElementById("cycle-toggle");
             currentStatus.cycle?.active ? ct.classList.add("active") : ct.classList.remove("active");
-            if (currentStatus.cycle?.heure && document.activeElement.id !== "cycle-time") document.getElementById("cycle-time").value = currentStatus.cycle.heure;
-            if (currentStatus.cycle?.lavage_min  !== undefined && document.activeElement.id !== "wash-min")  document.getElementById("wash-min").textContent  = currentStatus.cycle.lavage_min;
-            if (currentStatus.cycle?.lavage_sec  !== undefined && document.activeElement.id !== "wash-sec")  document.getElementById("wash-sec").textContent  = currentStatus.cycle.lavage_sec;
-            if (currentStatus.cycle?.rincage_sec !== undefined && document.activeElement.id !== "rinse-sec") document.getElementById("rinse-sec").textContent  = currentStatus.cycle.rincage_sec;
+            if (!cycleEditing) {
+                if (currentStatus.cycle?.heure) document.getElementById("cycle-time").value = currentStatus.cycle.heure;
+                if (currentStatus.cycle?.lavage_min  !== undefined) document.getElementById("wash-min").textContent  = currentStatus.cycle.lavage_min;
+                if (currentStatus.cycle?.lavage_sec  !== undefined) document.getElementById("wash-sec").textContent  = currentStatus.cycle.lavage_sec;
+                if (currentStatus.cycle?.rincage_sec !== undefined) document.getElementById("rinse-sec").textContent  = currentStatus.cycle.rincage_sec;
+                if (currentStatus.cycle?.freq_jours  !== undefined) document.getElementById("frequency-days").textContent = currentStatus.cycle.freq_jours;
+            }
+
+
+
+
             const vannes = currentStatus.vannes || {};
             ["V1","V2","V3","V4","V5","V6"].forEach(v => {
                 const el = document.getElementById(`status-${v.toLowerCase()}`);
@@ -582,7 +589,25 @@
 
 
         async function toggleCycle()    { if(navigator.vibrate)navigator.vibrate(20); await sendCommand("cycle", { active: !currentStatus.cycle?.active }); }
-        async function saveCycle()      { if(navigator.vibrate)navigator.vibrate([30,50,30]); await sendCommand("cycle", { active: currentStatus.cycle?.active, heure: document.getElementById("cycle-time").value, lavage_min: parseInt(document.getElementById("wash-min").textContent), lavage_sec: parseInt(document.getElementById("wash-sec").textContent), rincage_sec: parseInt(document.getElementById("rinse-sec").textContent), freq_jours: parseInt(document.getElementById("frequency-days").textContent) }); alert("Cycle saved!"); }
+        async function saveCycle() {
+            if(navigator.vibrate)navigator.vibrate([30,50,30]);
+            const heure      = document.getElementById("cycle-time").value;
+            const lavage_min = parseInt(document.getElementById("wash-min").textContent);
+            const lavage_sec = parseInt(document.getElementById("wash-sec").textContent);
+            const rincage_sec= parseInt(document.getElementById("rinse-sec").textContent);
+            const freq_jours = parseInt(document.getElementById("frequency-days").textContent);
+            const active     = currentStatus.cycle?.active;
+            if (!currentStatus.cycle) currentStatus.cycle = {};
+            currentStatus.cycle.heure       = heure;
+            currentStatus.cycle.lavage_min  = lavage_min;
+            currentStatus.cycle.lavage_sec  = lavage_sec;
+            currentStatus.cycle.rincage_sec = rincage_sec;
+            currentStatus.cycle.freq_jours  = freq_jours;
+            document.getElementById("dashboard-cycle").textContent = active ? "Active" : "Off";
+            await sendCommand("cycle", { active, heure, lavage_min, lavage_sec, rincage_sec, freq_jours });
+            cycleEditing = false;
+            alert("Cycle saved!");
+        }
 
         function adjustWashMin(d)   { const el=document.getElementById("wash-min");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
         function adjustWashSec(d)   { const el=document.getElementById("wash-sec");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(59,v));  if(navigator.vibrate)navigator.vibrate(10); }
