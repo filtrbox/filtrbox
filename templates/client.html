@@ -69,6 +69,9 @@
         .control-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 12px; }
         .btn { background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4); border-radius: 14px; padding: 14px 20px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; font-family: 'Poppins', sans-serif; }
         .btn:active { transform: scale(0.95); }
+        .btn-sending { opacity: 0.6; transform: scale(0.97); transition: all .1s; }
+        .btn-success { border-color: #00FF94 !important; background: rgba(0,255,148,0.3) !important; transition: all .2s; }
+        .btn-error   { border-color: #FF4444 !important; background: rgba(255,68,68,0.3) !important; transition: all .2s; }
         .btn-active { background: rgba(0,255,148,0.3); border-color: #00FF94; box-shadow: 0 0 20px rgba(0,255,148,0.4); }
         .time-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .time-input { flex: 1; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 12px; color: white; font-size: 16px; font-weight: 700; text-align: center; font-family: 'Space Grotesk', monospace; }
@@ -500,7 +503,18 @@
             return Object.keys(d)[0];
         }
 
-        async function setMode(mode)        { if(navigator.vibrate) navigator.vibrate(20); await sendCommand("mode", mode); }
+        async function setMode(mode) {
+            if(navigator.vibrate) navigator.vibrate(20);
+            const btnId = "mode-" + mode.toLowerCase().replace("filtration","filtration").replace("lavage","lavage").replace("rin00e7age","rincage").replace("recirculation","recirculation").replace("vidange","vidange").replace("hivernage","hivernage").replace("arr00eat","arret");
+            const btn = document.getElementById(btnId);
+            if (btn) { btn.classList.add("btn-sending"); }
+            try {
+                await sendCommand("mode", mode);
+                if (btn) { btn.classList.remove("btn-sending"); btn.classList.add("btn-success"); setTimeout(() => btn.classList.remove("btn-success"), 1500); }
+            } catch(e) {
+                if (btn) { btn.classList.remove("btn-sending"); btn.classList.add("btn-error"); setTimeout(() => btn.classList.remove("btn-error"), 1500); }
+            }
+        }
         async function toggleSchedule() {
             if(navigator.vibrate)navigator.vibrate(20);
             const newActive = !document.getElementById("schedule-toggle").classList.contains("active");
@@ -514,14 +528,28 @@
         async function saveSchedule() {
             if(navigator.vibrate)navigator.vibrate([30,50,30]);
             const active = document.getElementById("schedule-toggle").classList.contains("active");
-            await sendCommand("programmation", {
-                active: active,
-                heure_debut: document.getElementById("start-time").value,
-                heure_fin: document.getElementById("end-time").value
-            });
+            const heure_debut = document.getElementById("start-time").value;
+            const heure_fin = document.getElementById("end-time").value;
+            if (!currentStatus.prog) currentStatus.prog = {};
+            currentStatus.prog.active = active;
+            currentStatus.prog.heure_debut = heure_debut;
+            currentStatus.prog.heure_fin = heure_fin;
+            document.getElementById("dashboard-schedule").textContent = active ? "Active" : "Inactive";
+            await sendCommand("programmation", { active, heure_debut, heure_fin });
             progEditing = false;
             alert("Schedule saved!");
         }
+
+
+
+
+
+
+
+
+
+
+
         async function toggleCycle()        {
             if(navigator.vibrate) navigator.vibrate(20);
             await sendCommand("cycle", { active: !currentStatus.cycle?.active });
