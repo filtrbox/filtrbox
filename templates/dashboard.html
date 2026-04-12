@@ -259,7 +259,7 @@
                 </div>
                 <div class="control-section">
                     <div class="control-title">Start Time</div>
-                    <div class="time-input-group"><input type="time" class="time-input" id="cycle-time" value="10:00"></div>
+                    <div class="time-input-group"><input type="time" class="time-input" id="cycle-time" value="10:00" onfocus="cycleEditing=true"></div>
                 </div>
                 <div class="control-section">
                     <div class="control-title">Wash Duration</div>
@@ -609,10 +609,10 @@
             alert("Cycle saved!");
         }
 
-        function adjustWashMin(d)   { const el=document.getElementById("wash-min");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
-        function adjustWashSec(d)   { const el=document.getElementById("wash-sec");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(59,v));  if(navigator.vibrate)navigator.vibrate(10); }
-        function adjustRinseSec(d)  { const el=document.getElementById("rinse-sec");      let v=parseInt(el.textContent)+d; el.textContent=Math.max(15,Math.min(300,v)); if(navigator.vibrate)navigator.vibrate(10); }
-        function adjustFrequency(d) { const el=document.getElementById("frequency-days"); let v=parseInt(el.textContent)+d; el.textContent=Math.max(1,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustWashMin(d)   { cycleEditing=true; const el=document.getElementById("wash-min");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustWashSec(d)   { cycleEditing=true; const el=document.getElementById("wash-sec");       let v=parseInt(el.textContent)+d; el.textContent=Math.max(0,Math.min(59,v));  if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustRinseSec(d)  { cycleEditing=true; const el=document.getElementById("rinse-sec");      let v=parseInt(el.textContent)+d; el.textContent=Math.max(15,Math.min(300,v)); if(navigator.vibrate)navigator.vibrate(10); }
+        function adjustFrequency(d) { cycleEditing=true; const el=document.getElementById("frequency-days"); let v=parseInt(el.textContent)+d; el.textContent=Math.max(1,Math.min(30,v));  if(navigator.vibrate)navigator.vibrate(10); }
 
         const container = document.getElementById("container");
         const dots = document.querySelectorAll(".nav-dot");
