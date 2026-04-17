@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Première connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg {
+  position:fixed; inset:0; z-index:0;
+  background:linear-gradient(135deg,#0f4c81,#1a6fa8,#0a2a4a);
+  transition:background 1.2s ease;
+}
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble {
+  position:absolute; bottom:-80px; border-radius:50%;
+  background:rgba(255,255,255,0.12);
+  animation:rise linear infinite;
+}
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s;animation-delay:0s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise {
+  0%{bottom:-80px;transform:translateX(0);opacity:0.8}
+  50%{transform:translateX(40px)}
+  100%{bottom:110vh;transform:translateX(-30px);opacity:0}
+}
+
+.waves {
+  position:fixed; bottom:0; left:0; width:100%; height:22%; z-index:1;
+  opacity:0.18; pointer-events:none;
+}
+.wave {
+  position:absolute; bottom:0; left:0; width:200%; height:100%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x;
+  background-size:50% 100%;
+  animation:wave 14s linear infinite;
+}
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app {
+  position:fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:20px 24px; gap:0;
+}
+
+.logo {
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(26px,5vw,52px);
+  color:white;
+  letter-spacing:5px;
+  text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3);
+  animation:wobble 3s ease-in-out infinite;
+  margin-bottom:6px;
+}
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator {
+  display:flex; gap:8px; margin-bottom:16px;
+}
+.dot {
+  width:10px; height:10px; border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  transition:all 0.4s ease;
+  cursor:pointer;
+}
+.dot.active {
+  background:white;
+  transform:scale(1.4);
+  box-shadow:0 0 10px rgba(255,255,255,0.6);
+}
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card {
+  width:100%; max-width:480px;
+  background:rgba(255,255,255,0.1);
+  border:2px solid rgba(255,255,255,0.2);
+  border-radius:24px;
+  padding:28px 24px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  margin-bottom:16px;
+  min-height:260px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+}
+
+.step-icon {
+  font-size:clamp(40px,8vw,64px);
+  margin-bottom:14px;
+  animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+
+.step-title-fr {
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(18px,3.5vw,26px);
+  color:white;
+  margin-bottom:4px;
+  line-height:1.2;
+}
+.step-title-en {
+  font-size:clamp(11px,2vw,14px);
+  color:rgba(255,255,255,0.6);
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.step-desc-fr {
+  font-size:clamp(13px,2.2vw,16px);
+  color:rgba(255,255,255,0.92);
+  font-weight:700;
+  line-height:1.6;
+  margin-bottom:6px;
+}
+.step-desc-en {
+  font-size:clamp(11px,1.8vw,13px);
+  color:rgba(255,255,255,0.55);
+  font-weight:700;
+  line-height:1.5;
+  font-style:italic;
+}
+
+.highlight {
+  display:inline-block;
+  background:rgba(0,255,148,0.25);
+  border:1px solid rgba(0,255,148,0.5);
+  color:#00FF94;
+  border-radius:8px;
+  padding:1px 8px;
+  font-family:'Fredoka One',cursive;
+  font-style:normal;
+}
+
+.nav-row {
+  display:flex; gap:12px; align-items:center;
+  width:100%; max-width:480px;
+}
+.btn {
+  flex:1;
+  padding:14px;
+  border-radius:16px;
+  border:2px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.15);
+  color:white;
+  font-family:'Nunito',sans-serif;
+  font-size:15px;
+  font-weight:900;
+  cursor:pointer;
+  transition:all 0.2s;
+  backdrop-filter:blur(10px);
+}
+.btn:active{transform:scale(0.96)}
+.btn.primary {
+  background:rgba(0,255,148,0.25);
+  border-color:rgba(0,255,148,0.6);
+  color:#00FF94;
+}
+.btn.primary:hover{background:rgba(0,255,148,0.35)}
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.url-box {
+  background:rgba(0,0,0,0.35);
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:12px;
+  padding:10px 16px;
+  font-family:monospace;
+  font-size:clamp(13px,2.5vw,16px);
+  color:#00FF94;
+  letter-spacing:1px;
+  margin:10px 0;
+  word-break:break-all;
+}
+
+.badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.15);
+  border:1.5px solid rgba(255,255,255,0.25);
+  border-radius:20px;
+  padding:5px 14px;
+  font-size:clamp(11px,2vw,13px);
+  font-weight:700;
+  color:white;
+  margin:4px;
+}
+.badge-green { background:rgba(0,255,148,0.2); border-color:rgba(0,255,148,0.4); color:#00FF94; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+
+  <div class="step-indicator" id="dots"></div>
+
+  <div class="card" id="card"></div>
+
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    icon: "🏊",
+    titleFr: "Bienvenue sur FILTRBOX !",
+    titleEn: "Welcome to FILTRBOX!",
+    descFr: "Votre système de filtration de piscine intelligent est maintenant connecté. Cette visite guidée vous explique comment piloter votre installation depuis votre téléphone, où que vous soyez.",
+    descEn: "Your smart pool filtration system is now connected. This guided tour explains how to control your installation from your phone, anywhere in the world.",
+    extra: null
+  },
+  {
+    icon: "🌐",
+    titleFr: "Accéder à votre interface",
+    titleEn: "Access your interface",
+    descFr: "Ouvrez votre navigateur et tapez l'adresse ci-dessous. Vous pouvez l'ajouter à l'écran d'accueil de votre téléphone pour un accès rapide.",
+    descEn: "Open your browser and enter the address below. You can add it to your phone's home screen for quick access.",
+    extra: "url"
+  },
+  {
+    icon: "🔐",
+    titleFr: "Connexion à votre compte",
+    titleEn: "Log in to your account",
+    descFr: "Entrez vos identifiants personnels fournis lors de l'installation. Ces identifiants sont uniques et donnent accès uniquement à votre piscine.",
+    descEn: "Enter your personal credentials provided during installation. These credentials are unique and only give access to your pool.",
+    extra: "login"
+  },
+  {
+    icon: "📱",
+    titleFr: "Navigation par balayage",
+    titleEn: "Swipe navigation",
+    descFr: "L'interface se compose de 5 pages. Faites glisser votre doigt vers le haut ou le bas pour naviguer entre les sections.",
+    descEn: "The interface has 5 pages. Swipe your finger up or down to navigate between sections.",
+    extra: "pages"
+  },
+  {
+    icon: "✅",
+    titleFr: "Vous êtes prêt !",
+    titleEn: "You're all set!",
+    descFr: "Votre piscine est maintenant à portée de main. En cas de question, contactez votre installateur FILTRBOX.",
+    descEn: "Your pool is now at your fingertips. If you have any questions, contact your FILTRBOX installer.",
+    extra: "done"
+  }
+];
+
+let current = 0;
+
+function buildDots() {
+  const el = document.getElementById('dots');
+  el.innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'url') {
+    extra = `<div class="url-box">https://filtrbox.fr/client</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:6px">
+      <span class="badge">📱 iPhone</span>
+      <span class="badge">🤖 Android</span>
+      <span class="badge">💻 PC</span>
+    </div>`;
+  } else if (s.extra === 'login') {
+    extra = `<div style="display:flex;flex-direction:column;gap:8px;width:100%;margin:10px 0">
+      <div style="background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">👤</span>
+        <span style="color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;">Votre identifiant / <em>Your login</em></span>
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">🔑</span>
+        <span style="color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;">Votre mot de passe / <em>Your password</em></span>
+      </div>
+    </div>`;
+  } else if (s.extra === 'pages') {
+    const pages = [
+      {fr:'Tableau de bord',en:'Dashboard',icon:'🏠'},
+      {fr:'Programmation',en:'Schedule',icon:'⏰'},
+      {fr:'Cycle lavage',en:'Wash cycle',icon:'🔁'},
+      {fr:'Statut système',en:'System status',icon:'📊'},
+      {fr:'Contrôle manuel',en:'Manual control',icon:'🎮'},
+    ];
+    extra = `<div style="display:flex;flex-direction:column;gap:6px;width:100%;margin-top:10px">
+      ${pages.map((p,i) => `
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">${p.icon}</span>
+          <span style="font-size:13px;font-weight:700;color:white;">${p.fr}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.5);margin-left:auto;font-style:italic">${p.en}</span>
+          <span style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.4)">${i+1}/5</span>
+        </div>`).join('')}
+    </div>`;
+  } else if (s.extra === 'done') {
+    extra = `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px">
+      <span class="badge badge-green">✓ Connecté</span>
+      <span class="badge badge-green">✓ Sécurisé</span>
+      <span class="badge badge-green">✓ Prêt</span>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,0.5);font-weight:700">
+      © FILTRBOX — Smart Pool Control
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      ${s.descEn ? `<div class="step-desc-en">${s.descEn}</div>` : ''}
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+  document.getElementById('btnNext').disabled = false;
+}
+
+function goTo(i) {
+  current = i;
+  buildDots();
+  buildCard();
+}
+function next() {
+  if (current < steps.length - 1) { current++; buildDots(); buildCard(); }
+}
+function prev() {
+  if (current > 0) { current--; buildDots(); buildCard(); }
+}
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Mode Filtration</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg {
+  position:fixed; inset:0; z-index:0;
+  background:linear-gradient(135deg,#0a3d6b,#1565C0,#0d47a1);
+  transition:background 1.2s ease;
+}
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble {
+  position:absolute; bottom:-80px; border-radius:50%;
+  background:rgba(255,255,255,0.12);
+  animation:rise linear infinite;
+}
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise{0%{bottom:-80px;transform:translateX(0);opacity:0.8}50%{transform:translateX(40px)}100%{bottom:110vh;transform:translateX(-30px);opacity:0}}
+
+.waves { position:fixed; bottom:0; left:0; width:100%; height:20%; z-index:1; opacity:0.18; pointer-events:none; }
+.wave { position:absolute; bottom:0; left:0; width:200%; height:100%; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x; background-size:50% 100%; animation:wave 14s linear infinite; }
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app {
+  position:fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-start;
+  padding:12px 16px 10px; gap:0;
+  overflow-y:auto;
+}
+
+.logo { font-family:'Fredoka One',cursive; font-size:clamp(20px,3.8vw,40px); color:white; letter-spacing:5px; text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3); animation:wobble 3s ease-in-out infinite; margin-bottom:5px; }
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator { display:flex; gap:8px; margin-bottom:10px; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.4s ease; cursor:pointer; }
+.dot.active { background:white; transform:scale(1.4); box-shadow:0 0 10px rgba(255,255,255,0.6); }
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card {
+  width:100%; max-width:500px;
+  background:rgba(255,255,255,0.1);
+  border:2px solid rgba(255,255,255,0.2);
+  border-radius:22px; padding:16px 16px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  margin-bottom:10px;
+  display:flex; flex-direction:column;
+  align-items:center; text-align:center;
+}
+
+.step-icon { font-size:clamp(32px,6vw,52px); margin-bottom:8px; animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+
+.step-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(16px,3vw,22px); color:white; margin-bottom:2px; }
+.step-title-en { font-size:clamp(9px,1.6vw,12px); color:rgba(255,255,255,0.55); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.step-desc-fr { font-size:clamp(12px,1.9vw,14px); color:rgba(255,255,255,0.92); font-weight:700; line-height:1.55; margin-bottom:4px; }
+.step-desc-en { font-size:clamp(10px,1.5vw,12px); color:rgba(255,255,255,0.5); font-weight:700; line-height:1.4; font-style:italic; }
+
+.nav-row { display:flex; gap:12px; align-items:center; width:100%; max-width:500px; }
+.btn { flex:1; padding:12px; border-radius:14px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; font-family:'Nunito',sans-serif; font-size:14px; font-weight:900; cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px); }
+.btn:active{transform:scale(0.96)}
+.btn.primary { background:rgba(0,255,148,0.25); border-color:rgba(0,255,148,0.6); color:#00FF94; }
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; width:100%; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Circuit hydraulique */
+.circuit-wrap { width:100%; margin:10px 0; }
+svg.circuit { width:100%; height:auto; display:block; }
+
+.pipe { stroke:rgba(255,255,255,0.35); stroke-width:3; fill:none; transition:all 0.6s ease; }
+.pipe-active { stroke:#00FF94; stroke-width:4.5; filter:drop-shadow(0 0 8px #00FF94); animation:flowAnim 2s linear infinite, glowPulse 2s ease-in-out infinite; }
+@keyframes flowAnim { 0%{stroke-dasharray:10 5;stroke-dashoffset:0}100%{stroke-dashoffset:-30} }
+@keyframes glowPulse { 0%,100%{stroke-width:4.5}50%{stroke-width:5.5} }
+
+.valve-open { fill:#00FF94 !important; filter:drop-shadow(0 0 6px #00FF94); animation:vPulse 2s ease-in-out infinite; }
+.valve-closed { fill:#FF4444 !important; }
+@keyframes vPulse { 0%,100%{filter:drop-shadow(0 0 6px #00FF94)}50%{filter:drop-shadow(0 0 12px #00FF94)} }
+
+.pump-spin circle { animation:pumpSpin 1.5s linear infinite; transform-origin:100px 30px; }
+@keyframes pumpSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Info boxes */
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:8px; }
+.info-box {
+  background:rgba(255,255,255,0.08);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:12px; padding:10px 10px;
+  text-align:center;
+}
+.info-box.green { background:rgba(0,255,148,0.1); border-color:rgba(0,255,148,0.3); }
+.info-icon { font-size:20px; margin-bottom:4px; }
+.info-label-fr { font-size:11px; font-weight:900; color:white; }
+.info-label-en { font-size:9px; color:rgba(255,255,255,0.5); font-style:italic; }
+
+/* Schedule */
+.schedule-demo {
+  width:100%; margin-top:8px;
+  background:rgba(0,0,0,0.25);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:14px; padding:12px 14px;
+}
+.schedule-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.schedule-row:last-child { margin-bottom:0; }
+.schedule-label-fr { font-size:12px; font-weight:900; color:rgba(255,255,255,0.8); }
+.schedule-label-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; }
+.schedule-value { font-family:'Fredoka One',cursive; font-size:18px; color:#00FF94; }
+.toggle-demo {
+  width:48px; height:26px; border-radius:13px;
+  background:#00FF94; position:relative;
+  box-shadow:0 0 10px rgba(0,255,148,0.4);
+}
+.toggle-thumb {
+  position:absolute; top:3px; right:3px;
+  width:20px; height:20px; border-radius:50%;
+  background:white; box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Timeline */
+.timeline {
+  width:100%; margin-top:8px;
+  display:flex; align-items:center; gap:4px;
+}
+.tl-label { font-size:10px; font-weight:900; color:rgba(255,255,255,0.6); min-width:32px; text-align:center; }
+.tl-bar { flex:1; height:20px; border-radius:10px; background:rgba(255,255,255,0.1); position:relative; overflow:hidden; }
+.tl-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,rgba(0,255,148,0.6),rgba(0,255,148,0.9)); animation:tlfill 2s ease forwards; }
+@keyframes tlfill{from{width:0}to{width:65%}}
+.tl-now { position:absolute; top:0; left:40%; height:100%; width:3px; background:white; border-radius:2px; }
+
+.steps-list { width:100%; margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.step-row {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.07);
+  border:1.5px solid rgba(255,255,255,0.12);
+  border-radius:11px; padding:8px 12px;
+}
+.step-row.active { background:rgba(0,255,148,0.12); border-color:rgba(0,255,148,0.3); }
+.step-ico { font-size:16px; }
+.step-txt-fr { font-size:12px; font-weight:900; color:white; }
+.step-txt-en { font-size:10px; color:rgba(255,255,255,0.5); font-style:italic; }
+.step-check { font-size:14px; margin-left:auto; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+  <div class="step-indicator" id="dots"></div>
+  <div class="card" id="card"></div>
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    icon:'💧',
+    titleFr:'Le mode Filtration',
+    titleEn:'Filtration mode',
+    descFr:'La filtration est le mode principal de votre piscine. L\'eau circule de la piscine vers le filtre, puis revient propre dans la piscine.',
+    descEn:'Filtration is your pool\'s main mode. Water flows from the pool to the filter, then returns clean to the pool.',
+    extra:'circuit'
+  },
+  {
+    icon:'⚙️',
+    titleFr:'Comment ça fonctionne',
+    titleEn:'How it works',
+    descFr:'La pompe aspire l\'eau de la piscine, la pousse à travers le filtre pour retenir les impuretés, puis renvoie l\'eau filtrée dans la piscine.',
+    descEn:'The pump draws water from the pool, pushes it through the filter to trap impurities, then sends the filtered water back to the pool.',
+    extra:'steps'
+  },
+  {
+    icon:'⏰',
+    titleFr:'Programmation automatique',
+    titleEn:'Automatic scheduling',
+    descFr:'Définissez une heure de début et de fin. La filtration démarrera et s\'arrêtera automatiquement tous les jours sans aucune action de votre part.',
+    descEn:'Set a start and end time. Filtration will start and stop automatically every day without any action from you.',
+    extra:'schedule'
+  },
+  {
+    icon:'📅',
+    titleFr:'Durée recommandée',
+    titleEn:'Recommended duration',
+    descFr:'En été, filtrez environ 1 heure par 10°C de température de l\'eau. Par exemple, pour 28°C : environ 8 heures de filtration par jour.',
+    descEn:'In summer, filter about 1 hour per 10°C of water temperature. For example, at 28°C: about 8 hours of filtration per day.',
+    extra:'duration'
+  },
+  {
+    icon:'🎮',
+    titleFr:'Démarrage manuel',
+    titleEn:'Manual start',
+    descFr:'Vous pouvez aussi démarrer la filtration manuellement à tout moment depuis la page "Contrôle Manuel" en appuyant sur le bouton Filtration.',
+    descEn:'You can also start filtration manually at any time from the "Manual Control" page by pressing the Filtration button.',
+    extra:'manual'
+  },
+];
+
+let current = 0;
+
+function buildDots() {
+  document.getElementById('dots').innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'circuit') {
+    extra = `<div class="circuit-wrap">
+      <svg class="circuit" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- POOL -->
+        <rect x="5" y="10" width="50" height="30" rx="5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        <text x="30" y="29" text-anchor="middle" fill="white" font-size="9" font-weight="bold" font-family="Nunito">PISCINE</text>
+        <!-- PUMP -->
+        <g class="pump-spin">
+          <circle cx="100" cy="30" r="20" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        </g>
+        <text x="100" y="34" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Nunito">POMPE</text>
+        <!-- V1 -->
+        <g><polygon points="160,22 170,30 160,38 150,30" class="valve-open" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="160" y="33" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Nunito">V1</text></g>
+        <!-- FILTER -->
+        <rect x="195" y="10" width="40" height="60" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        <circle cx="215" cy="28" r="6" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="215" cy="52" r="6" fill="rgba(255,255,255,0.3)"/>
+        <text x="215" y="43" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Nunito">FILTRE</text>
+        <!-- V4 -->
+        <g><polygon points="209,88 215,98 221,88 215,78" class="valve-open" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="215" y="91" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Nunito">V4</text></g>
+        <!-- V6 -->
+        <g><polygon points="238,120 248,128 238,136 228,128" class="valve-open" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="238" y="131" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Nunito">V6</text></g>
+        <!-- POOL RETURN -->
+        <rect x="265" y="113" width="50" height="30" rx="5" fill="rgba(100,200,255,0.2)" stroke="rgba(100,200,255,0.5)" stroke-width="1.5"/>
+        <text x="290" y="132" text-anchor="middle" fill="white" font-size="9" font-weight="bold" font-family="Nunito">PISCINE</text>
+        <!-- V2 CLOSED -->
+        <g><polygon points="248,22 258,30 248,38 238,30" class="valve-closed" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <text x="248" y="33" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Nunito">V2</text></g>
+
+        <!-- PIPES actifs -->
+        <path d="M55 25 L80 25" class="pipe pipe-active" id="p1"/>
+        <path d="M120 25 L150 25" class="pipe pipe-active" id="p2"/>
+        <path d="M170 25 L195 25" class="pipe pipe-active" id="p3"/>
+        <path d="M215 70 L215 78" class="pipe pipe-active" id="p4"/>
+        <path d="M215 98 L215 128" class="pipe pipe-active" id="p5"/>
+        <path d="M248 128 L265 128" class="pipe pipe-active" id="p6"/>
+
+        <!-- PIPES inactifs -->
+        <path d="M258 30 L315 30" class="pipe" id="p7"/>
+
+        <!-- Flèches direction -->
+        <text x="67" y="21" fill="#00FF94" font-size="8">→</text>
+        <text x="133" y="21" fill="#00FF94" font-size="8">→</text>
+        <text x="255" y="125" fill="#00FF94" font-size="8">→</text>
+      </svg>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:center">
+      <span style="background:rgba(0,255,148,0.2);border:1px solid rgba(0,255,148,0.4);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:900;color:#00FF94">● Flux actif / Active flow</span>
+      <span style="background:rgba(255,68,68,0.2);border:1px solid rgba(255,68,68,0.4);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:900;color:#FF6666">● Vannes fermées / Closed valves</span>
+    </div>`;
+
+  } else if (s.extra === 'steps') {
+    const rows = [
+      {ico:'🌀',fr:'La pompe aspire l\'eau',en:'The pump draws water',active:true},
+      {ico:'🔵',fr:'Passage dans le filtre',en:'Passes through the filter',active:true},
+      {ico:'✨',fr:'Impuretés retenues',en:'Impurities trapped',active:true},
+      {ico:'💧',fr:'Eau propre dans la piscine',en:'Clean water back to pool',active:true},
+    ];
+    extra = `<div class="steps-list">
+      ${rows.map((r,i) => `
+        <div class="step-row ${r.active?'active':''}" style="animation-delay:${i*0.1}s">
+          <div class="step-ico">${r.ico}</div>
+          <div>
+            <div class="step-txt-fr">${r.fr}</div>
+            <div class="step-txt-en">${r.en}</div>
+          </div>
+          <div class="step-check">${r.active?'✅':''}</div>
+        </div>`).join('')}
+    </div>`;
+
+  } else if (s.extra === 'schedule') {
+    extra = `<div class="schedule-demo">
+      <div class="schedule-row">
+        <div>
+          <div class="schedule-label-fr">Programmation</div>
+          <div class="schedule-label-en">Schedule active</div>
+        </div>
+        <div class="toggle-demo"><div class="toggle-thumb"></div></div>
+      </div>
+      <div class="schedule-row">
+        <div>
+          <div class="schedule-label-fr">Heure de début</div>
+          <div class="schedule-label-en">Start time</div>
+        </div>
+        <div class="schedule-value">08:00</div>
+      </div>
+      <div class="schedule-row">
+        <div>
+          <div class="schedule-label-fr">Heure de fin</div>
+          <div class="schedule-label-en">End time</div>
+        </div>
+        <div class="schedule-value">18:00</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.6);font-weight:700">
+      💾 N'oubliez pas d'appuyer sur "Save Schedule" / <em>Don't forget to press "Save Schedule"</em>
+    </div>`;
+
+  } else if (s.extra === 'duration') {
+    extra = `<div style="margin-top:8px;width:100%">
+      <div class="timeline">
+        <div class="tl-label">0h</div>
+        <div class="tl-bar">
+          <div class="tl-fill"></div>
+          <div class="tl-now"></div>
+        </div>
+        <div class="tl-label">24h</div>
+      </div>
+      <div style="margin-top:4px;text-align:center;font-size:10px;color:rgba(255,255,255,0.5)">Exemple : 8h de filtration / Example: 8h filtration</div>
+      <div class="info-grid" style="margin-top:10px">
+        <div class="info-box">
+          <div class="info-icon">🌡️</div>
+          <div class="info-label-fr">20°C → 6h/jour</div>
+          <div class="info-label-en">20°C → 6h/day</div>
+        </div>
+        <div class="info-box green">
+          <div class="info-icon">☀️</div>
+          <div class="info-label-fr">28°C → 8h/jour</div>
+          <div class="info-label-en">28°C → 8h/day</div>
+        </div>
+        <div class="info-box">
+          <div class="info-icon">🔥</div>
+          <div class="info-label-fr">32°C → 10h/jour</div>
+          <div class="info-label-en">32°C → 10h/day</div>
+        </div>
+        <div class="info-box">
+          <div class="info-icon">❄️</div>
+          <div class="info-label-fr">15°C → 4h/jour</div>
+          <div class="info-label-en">15°C → 4h/day</div>
+        </div>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'manual') {
+    extra = `<div style="margin-top:10px;width:100%">
+      <div style="background:rgba(255,255,255,0.08);border:2px solid rgba(0,255,148,0.4);border-radius:14px;padding:14px;text-align:center;animation:btnPulse 2s ease-in-out infinite">
+        <div style="font-size:22px;margin-bottom:6px">💧</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:18px;color:#00FF94">Filtration</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px">Appuyez pour démarrer / Tap to start</div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;text-align:center">
+        📍 Page 5 — Contrôle Manuel / Manual Control
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      <div class="step-desc-en">${s.descEn}</div>
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes btnPulse{0%,100%{box-shadow:0 0 0 rgba(0,255,148,0.3)}50%{box-shadow:0 0 20px rgba(0,255,148,0.5)}}';
+document.head.appendChild(style);
+
+function goTo(i) { current=i; buildDots(); buildCard(); }
+function next() { if(current<steps.length-1){current++;buildDots();buildCard();} }
+function prev() { if(current>0){current--;buildDots();buildCard();} }
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

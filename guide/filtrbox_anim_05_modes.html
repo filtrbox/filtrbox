@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Modes Manuels</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg { position:fixed; inset:0; z-index:0; transition:background 1.2s ease; }
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble { position:absolute; bottom:-80px; border-radius:50%; background:rgba(255,255,255,0.12); animation:rise linear infinite; }
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise{0%{bottom:-80px;transform:translateX(0);opacity:0.8}50%{transform:translateX(40px)}100%{bottom:110vh;transform:translateX(-30px);opacity:0}}
+
+.waves { position:fixed; bottom:0; left:0; width:100%; height:20%; z-index:1; opacity:0.18; pointer-events:none; }
+.wave { position:absolute; bottom:0; left:0; width:200%; height:100%; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x; background-size:50% 100%; animation:wave 14s linear infinite; }
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px 16px 10px; gap:0; overflow-y:auto; }
+
+.logo { font-family:'Fredoka One',cursive; font-size:clamp(20px,3.8vw,40px); color:white; letter-spacing:5px; text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3); animation:wobble 3s ease-in-out infinite; margin-bottom:5px; }
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator { display:flex; gap:8px; margin-bottom:10px; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.4s ease; cursor:pointer; }
+.dot.active { background:white; transform:scale(1.4); box-shadow:0 0 10px rgba(255,255,255,0.6); }
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card { width:100%; max-width:500px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); border-radius:22px; padding:16px; backdrop-filter:blur(20px); box-shadow:0 20px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15); margin-bottom:10px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+
+.step-icon { font-size:clamp(32px,6vw,52px); margin-bottom:8px; animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.step-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(16px,3vw,22px); color:white; margin-bottom:2px; }
+.step-title-en { font-size:clamp(9px,1.6vw,12px); color:rgba(255,255,255,0.55); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.step-desc-fr { font-size:clamp(12px,1.9vw,14px); color:rgba(255,255,255,0.92); font-weight:700; line-height:1.55; margin-bottom:4px; }
+.step-desc-en { font-size:clamp(10px,1.5vw,12px); color:rgba(255,255,255,0.5); font-weight:700; line-height:1.4; font-style:italic; }
+
+.nav-row { display:flex; gap:12px; align-items:center; width:100%; max-width:500px; }
+.btn { flex:1; padding:12px; border-radius:14px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; font-family:'Nunito',sans-serif; font-size:14px; font-weight:900; cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px); }
+.btn:active{transform:scale(0.96)}
+.btn.primary { background:rgba(0,255,148,0.25); border-color:rgba(0,255,148,0.6); color:#00FF94; }
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; width:100%; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Mode buttons grid */
+.modes-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:10px; }
+.mode-btn-demo {
+  border-radius:14px; padding:12px 8px;
+  border:2px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1);
+  text-align:center; cursor:pointer;
+  transition:all 0.2s;
+}
+.mode-btn-demo.active {
+  border-color:rgba(0,255,148,0.6);
+  background:rgba(0,255,148,0.2);
+  box-shadow:0 0 15px rgba(0,255,148,0.3);
+}
+.mode-btn-demo.danger {
+  border-color:rgba(255,100,100,0.4);
+  background:rgba(255,100,100,0.1);
+}
+.mode-btn-icon { font-size:22px; margin-bottom:4px; }
+.mode-btn-fr { font-size:12px; font-weight:900; color:white; }
+.mode-btn-en { font-size:9px; color:rgba(255,255,255,0.5); font-style:italic; }
+
+/* Mode detail card */
+.mode-detail {
+  width:100%; margin-top:10px;
+  border-radius:14px; padding:12px 14px;
+  display:flex; gap:12px; align-items:flex-start;
+  text-align:left;
+}
+.mode-detail-icon { font-size:28px; flex-shrink:0; }
+.mode-detail-title-fr { font-size:14px; font-weight:900; color:white; margin-bottom:2px; }
+.mode-detail-title-en { font-size:10px; color:rgba(255,255,255,0.5); font-style:italic; margin-bottom:6px; }
+.mode-detail-desc-fr { font-size:12px; color:rgba(255,255,255,0.85); font-weight:700; line-height:1.5; }
+.mode-detail-desc-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; margin-top:2px; }
+
+/* Vannes indicator */
+.vannes-row { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+.vanne-badge {
+  width:36px; height:36px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:900; color:white;
+  border:1.5px solid;
+}
+.vanne-badge.open { background:rgba(0,255,148,0.2); border-color:rgba(0,255,148,0.5); color:#00FF94; }
+.vanne-badge.closed { background:rgba(255,68,68,0.2); border-color:rgba(255,68,68,0.4); color:#FF6666; }
+
+/* Warning stop */
+.stop-warning { background:rgba(255,50,50,0.15); border:2px solid rgba(255,100,100,0.4); border-radius:14px; padding:12px 14px; margin-top:10px; text-align:left; display:flex; gap:10px; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+  <div class="step-indicator" id="dots"></div>
+  <div class="card" id="card"></div>
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const gradients = [
+  'linear-gradient(135deg,#1a237e,#283593,#0d47a1)',
+  'linear-gradient(135deg,#0d47a1,#1565C0,#0a3d6b)',
+  'linear-gradient(135deg,#0a3d6b,#1565C0,#1a237e)',
+  'linear-gradient(135deg,#004d40,#00695c,#0d47a1)',
+  'linear-gradient(135deg,#b71c1c,#c62828,#0d47a1)',
+  'linear-gradient(135deg,#1a237e,#0d47a1,#0a3d6b)',
+];
+
+const modes = [
+  {
+    icon:'💧', fr:'Filtration', en:'Filtration',
+    color:'rgba(0,255,148,0.2)', borderColor:'rgba(0,255,148,0.5)',
+    descFr:'Mode principal. L\'eau passe par le filtre et revient propre.',
+    descEn:'Main mode. Water passes through the filter and returns clean.',
+    vannes:{V1:'open',V2:'closed',V3:'closed',V4:'open',V5:'closed',V6:'open'}
+  },
+  {
+    icon:'🧹', fr:'Lavage', en:'Wash',
+    color:'rgba(255,165,0,0.2)', borderColor:'rgba(255,165,0,0.5)',
+    descFr:'Nettoie le filtre en inversant le sens de l\'eau.',
+    descEn:'Cleans the filter by reversing the water flow.',
+    vannes:{V1:'closed',V2:'open',V3:'open',V4:'open',V5:'closed',V6:'closed'}
+  },
+  {
+    icon:'💦', fr:'Rinçage', en:'Rinse',
+    color:'rgba(100,200,255,0.2)', borderColor:'rgba(100,200,255,0.5)',
+    descFr:'Rince le filtre après le lavage avant de reprendre la filtration.',
+    descEn:'Rinses the filter after washing before resuming filtration.',
+    vannes:{V1:'open',V2:'closed',V3:'closed',V4:'open',V5:'open',V6:'closed'}
+  },
+  {
+    icon:'🔁', fr:'Recirculation', en:'Recirculation',
+    color:'rgba(150,100,255,0.2)', borderColor:'rgba(150,100,255,0.5)',
+    descFr:'L\'eau circule sans passer par le filtre. Utile pour brasser les produits chimiques.',
+    descEn:'Water circulates without passing through the filter. Useful for mixing chemicals.',
+    vannes:{V1:'closed',V2:'closed',V3:'open',V4:'closed',V5:'closed',V6:'open'}
+  },
+  {
+    icon:'🚰', fr:'Vidange', en:'Drain',
+    color:'rgba(255,100,50,0.2)', borderColor:'rgba(255,100,50,0.5)',
+    descFr:'Vide la piscine vers l\'égout. À utiliser avec précaution.',
+    descEn:'Drains the pool to the sewer. Use with caution.',
+    vannes:{V1:'closed',V2:'closed',V3:'open',V4:'closed',V5:'open',V6:'closed'}
+  },
+  {
+    icon:'❄️', fr:'Hivernage', en:'Winterize',
+    color:'rgba(100,180,255,0.2)', borderColor:'rgba(100,180,255,0.5)',
+    descFr:'Position d\'hivernage. Toutes les vannes ouvertes, pompe arrêtée.',
+    descEn:'Winter position. All valves open, pump stopped.',
+    vannes:{V1:'open',V2:'open',V3:'open',V4:'open',V5:'open',V6:'open'}
+  },
+];
+
+const steps = [
+  {
+    icon:'🎮',
+    titleFr:'Le contrôle manuel',
+    titleEn:'Manual control',
+    descFr:'La page 5 vous permet de changer le mode de votre installation à tout moment. 7 modes sont disponibles selon vos besoins.',
+    descEn:'Page 5 lets you change your installation\'s mode at any time. 7 modes are available for your needs.',
+    extra:'grid'
+  },
+  {
+    icon:'🔁',
+    titleFr:'Mode Recirculation',
+    titleEn:'Recirculation mode',
+    descFr:'L\'eau circule dans la piscine sans passer par le filtre. Idéal pour bien mélanger les produits chimiques que vous venez d\'ajouter.',
+    descEn:'Water circulates in the pool without going through the filter. Ideal for mixing chemicals you\'ve just added.',
+    extra:'mode',
+    modeIdx:3
+  },
+  {
+    icon:'🚰',
+    titleFr:'Mode Vidange',
+    titleEn:'Drain mode',
+    descFr:'Ce mode vide progressivement la piscine. Utilisez-le pour baisser le niveau de l\'eau ou pour la vidange complète en fin de saison.',
+    descEn:'This mode gradually empties the pool. Use it to lower the water level or for complete draining at the end of the season.',
+    extra:'mode',
+    modeIdx:4
+  },
+  {
+    icon:'❄️',
+    titleFr:'Mode Hivernage',
+    titleEn:'Winterize mode',
+    descFr:'Prépare l\'installation pour l\'hiver. Toutes les vannes sont ouvertes pour permettre la vidange des tuyaux et éviter le gel.',
+    descEn:'Prepares the installation for winter. All valves are open to allow pipe drainage and prevent freezing.',
+    extra:'mode',
+    modeIdx:5
+  },
+  {
+    icon:'⏹️',
+    titleFr:'Mode Arrêt',
+    titleEn:'Stop mode',
+    descFr:'Arrête immédiatement toute circulation. La pompe s\'arrête et toutes les vannes se ferment. À utiliser en cas d\'urgence ou pour l\'entretien.',
+    descEn:'Immediately stops all circulation. The pump stops and all valves close. Use in case of emergency or for maintenance.',
+    extra:'stop'
+  },
+];
+
+let current = 0;
+
+function buildDots() {
+  document.getElementById('dots').innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  document.getElementById('bg').style.background = gradients[current % gradients.length];
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'grid') {
+    const allModes = [
+      {icon:'💧',fr:'Filtration',en:'Filtration',active:true},
+      {icon:'🧹',fr:'Lavage',en:'Wash'},
+      {icon:'💦',fr:'Rinçage',en:'Rinse'},
+      {icon:'🔁',fr:'Recirculation',en:'Recirculation'},
+      {icon:'🚰',fr:'Vidange',en:'Drain'},
+      {icon:'❄️',fr:'Hivernage',en:'Winterize'},
+    ];
+    extra = `<div class="modes-grid">
+      ${allModes.map(m => `
+        <div class="mode-btn-demo ${m.active?'active':''}">
+          <div class="mode-btn-icon">${m.icon}</div>
+          <div class="mode-btn-fr">${m.fr}</div>
+          <div class="mode-btn-en">${m.en}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:8px;background:rgba(255,50,50,0.15);border:1.5px solid rgba(255,100,100,0.4);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">⏹️</span>
+      <div>
+        <div style="font-size:12px;font-weight:900;color:rgba(255,150,150,1)">Arrêt / Stop</div>
+        <div style="font-size:10px;color:rgba(255,100,100,0.6);font-style:italic">Stops everything immediately</div>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'mode') {
+    const m = modes[s.modeIdx];
+    const vannesHTML = Object.entries(m.vannes).map(([v,state]) =>
+      `<div class="vanne-badge ${state}">${v}<br>${state==='open'?'O':'F'}</div>`
+    ).join('');
+    extra = `<div class="mode-detail" style="background:${m.color};border:2px solid ${m.borderColor}">
+      <div class="mode-detail-icon">${m.icon}</div>
+      <div style="flex:1">
+        <div class="mode-detail-title-fr">${m.fr}</div>
+        <div class="mode-detail-title-en">${m.en}</div>
+        <div class="mode-detail-desc-fr">${m.descFr}</div>
+        <div class="mode-detail-desc-en">${m.descEn}</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;margin-bottom:4px">
+      Position des vannes / Valve positions:
+    </div>
+    <div class="vannes-row">${vannesHTML}</div>
+    <div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.4)">
+      <span style="color:#00FF94">■</span> Ouverte/Open &nbsp; <span style="color:#FF6666">■</span> Fermée/Closed
+    </div>`;
+
+  } else if (s.extra === 'stop') {
+    extra = `<div style="margin-top:10px;width:100%">
+      <div style="background:rgba(255,50,50,0.2);border:2px solid rgba(255,100,100,0.5);border-radius:16px;padding:16px;text-align:center;animation:stopPulse 2s ease-in-out infinite">
+        <div style="font-size:32px;margin-bottom:6px">⏹️</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;color:rgba(255,150,150,1)">Arrêt / Stop</div>
+        <div style="font-size:11px;color:rgba(255,100,100,0.7);margin-top:4px;font-style:italic">Stops everything immediately</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:8px;text-align:center">
+          <div style="font-size:14px;font-weight:900;color:white">Pompe</div>
+          <div style="font-size:20px;margin:4px 0">⛔</div>
+          <div style="font-size:9px;color:rgba(255,100,100,0.8)">Arrêtée / Stopped</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:8px;text-align:center">
+          <div style="font-size:14px;font-weight:900;color:white">Vannes</div>
+          <div style="font-size:20px;margin:4px 0">🔒</div>
+          <div style="font-size:9px;color:rgba(255,100,100,0.8)">Fermées / Closed</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;background:rgba(255,165,0,0.12);border:1.5px solid rgba(255,165,0,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:rgba(255,210,100,1);text-align:left">
+        💡 La programmation reprend automatiquement à l'heure prévue.<br>
+        <span style="color:rgba(255,165,0,0.6);font-style:italic">The schedule resumes automatically at the planned time.</span>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      <div class="step-desc-en">${s.descEn}</div>
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes stopPulse{0%,100%{box-shadow:0 0 0 rgba(255,100,100,0.2)}50%{box-shadow:0 0 20px rgba(255,100,100,0.4)}}';
+document.head.appendChild(style);
+
+function goTo(i) { current=i; buildDots(); buildCard(); }
+function next() { if(current<steps.length-1){current++;buildDots();buildCard();} }
+function prev() { if(current>0){current--;buildDots();buildCard();} }
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Interface globale</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg {
+  position:fixed; inset:0; z-index:0;
+  transition:background 1.2s ease;
+}
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble {
+  position:absolute; bottom:-80px; border-radius:50%;
+  background:rgba(255,255,255,0.12);
+  animation:rise linear infinite;
+}
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s;animation-delay:0s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise {
+  0%{bottom:-80px;transform:translateX(0);opacity:0.8}
+  50%{transform:translateX(40px)}
+  100%{bottom:110vh;transform:translateX(-30px);opacity:0}
+}
+
+.waves {
+  position:fixed; bottom:0; left:0; width:100%; height:22%; z-index:1;
+  opacity:0.18; pointer-events:none;
+}
+.wave {
+  position:absolute; bottom:0; left:0; width:200%; height:100%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x;
+  background-size:50% 100%;
+  animation:wave 14s linear infinite;
+}
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app {
+  position:fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:16px 20px; gap:0;
+}
+
+.logo {
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(22px,4vw,44px);
+  color:white;
+  letter-spacing:5px;
+  text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3);
+  animation:wobble 3s ease-in-out infinite;
+  margin-bottom:6px;
+}
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator {
+  display:flex; gap:8px; margin-bottom:14px;
+}
+.dot {
+  width:10px; height:10px; border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  transition:all 0.4s ease; cursor:pointer;
+}
+.dot.active { background:white; transform:scale(1.4); box-shadow:0 0 10px rgba(255,255,255,0.6); }
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card {
+  width:100%; max-width:500px;
+  background:rgba(255,255,255,0.1);
+  border:2px solid rgba(255,255,255,0.2);
+  border-radius:24px;
+  padding:22px 20px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  margin-bottom:14px;
+  min-height:300px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+}
+
+.step-icon { font-size:clamp(36px,7vw,56px); margin-bottom:10px; animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+
+.step-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(17px,3.2vw,24px); color:white; margin-bottom:3px; line-height:1.2; }
+.step-title-en { font-size:clamp(10px,1.8vw,13px); color:rgba(255,255,255,0.55); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+.step-desc-fr { font-size:clamp(12px,2vw,15px); color:rgba(255,255,255,0.92); font-weight:700; line-height:1.6; margin-bottom:6px; }
+.step-desc-en { font-size:clamp(10px,1.6vw,12px); color:rgba(255,255,255,0.5); font-weight:700; line-height:1.5; font-style:italic; }
+
+.nav-row { display:flex; gap:12px; align-items:center; width:100%; max-width:500px; }
+.btn {
+  flex:1; padding:13px;
+  border-radius:16px; border:2px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.15); color:white;
+  font-family:'Nunito',sans-serif; font-size:14px; font-weight:900;
+  cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px);
+}
+.btn:active{transform:scale(0.96)}
+.btn.primary { background:rgba(0,255,148,0.25); border-color:rgba(0,255,148,0.6); color:#00FF94; }
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Phone mockup */
+.phone-mockup {
+  width:130px; height:220px;
+  background:rgba(0,0,0,0.4);
+  border:3px solid rgba(255,255,255,0.4);
+  border-radius:22px;
+  margin:12px auto;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.phone-screen {
+  position:absolute; inset:6px;
+  border-radius:16px;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.phone-page {
+  flex:0 0 100%; height:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-size:10px; font-weight:900; color:white;
+  transition:transform 0.5s ease;
+}
+.phone-notch {
+  position:absolute; top:6px; left:50%; transform:translateX(-50%);
+  width:40px; height:5px; background:rgba(0,0,0,0.6); border-radius:3px; z-index:5;
+}
+.swipe-arrow {
+  font-size:18px; animation:swipeAnim 1.5s ease-in-out infinite;
+  margin-top:8px; color:rgba(255,255,255,0.6);
+}
+@keyframes swipeAnim{0%,100%{transform:translateY(0);opacity:0.6}50%{transform:translateY(-6px);opacity:1}}
+
+/* Pages list */
+.pages-list {
+  display:flex; flex-direction:column; gap:7px;
+  width:100%; margin-top:10px;
+}
+.page-row {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.08);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:12px; padding:9px 14px;
+  animation:slideIn 0.3s ease forwards;
+  opacity:0;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.page-num {
+  font-family:'Fredoka One',cursive;
+  font-size:16px; color:rgba(255,255,255,0.4);
+  min-width:24px;
+}
+.page-icon { font-size:18px; }
+.page-text { flex:1; text-align:left; }
+.page-name-fr { font-size:13px; font-weight:900; color:white; }
+.page-name-en { font-size:10px; color:rgba(255,255,255,0.5); font-style:italic; }
+.page-active-badge {
+  background:rgba(0,255,148,0.2);
+  border:1px solid rgba(0,255,148,0.4);
+  color:#00FF94; font-size:9px; font-weight:900;
+  padding:2px 8px; border-radius:10px;
+}
+
+/* Status strip */
+.status-strip {
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:10px;
+}
+.status-pill {
+  background:rgba(255,255,255,0.12);
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:20px; padding:5px 12px;
+  font-size:12px; font-weight:700; color:white;
+}
+.status-pill.green { background:rgba(0,255,148,0.2); border-color:rgba(0,255,148,0.4); color:#00FF94; }
+
+/* Gesture demo */
+.gesture-demo {
+  display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:10px;
+}
+.gesture-row {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:12px; padding:8px 16px;
+  width:100%;
+}
+.gesture-icon { font-size:20px; }
+.gesture-text-fr { font-size:12px; font-weight:900; color:white; }
+.gesture-text-en { font-size:10px; color:rgba(255,255,255,0.5); font-style:italic; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+  <div class="step-indicator" id="dots"></div>
+  <div class="card" id="card"></div>
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const gradients = [
+  'linear-gradient(135deg,#0f4c81,#1a6fa8,#0a2a4a)',
+  'linear-gradient(135deg,#0a2a4a,#1565C0,#0d47a1)',
+  'linear-gradient(135deg,#1a237e,#283593,#0f4c81)',
+  'linear-gradient(135deg,#0d47a1,#1976D2,#1a6fa8)',
+  'linear-gradient(135deg,#0f4c81,#0a3d6b,#1a6fa8)',
+  'linear-gradient(135deg,#0a2a4a,#0f4c81,#1565C0)',
+];
+
+const pages = [
+  {num:'1',icon:'🏠',fr:'Tableau de bord',en:'Dashboard'},
+  {num:'2',icon:'⏰',fr:'Programmation',en:'Schedule'},
+  {num:'3',icon:'🔁',fr:'Cycle de lavage',en:'Wash cycle'},
+  {num:'4',icon:'📊',fr:'Statut système',en:'System status'},
+  {num:'5',icon:'🎮',fr:'Contrôle manuel',en:'Manual control'},
+];
+
+const steps = [
+  {
+    icon:'📱',
+    titleFr:'Une interface en 5 pages',
+    titleEn:'A 5-page interface',
+    descFr:'Votre interface FILTRBOX est organisée en 5 sections accessibles par balayage vertical. Chaque page a une fonction précise.',
+    descEn:'Your FILTRBOX interface is organized in 5 sections accessible by vertical swipe. Each page has a specific function.',
+    extra:'phonemock'
+  },
+  {
+    icon:'👆',
+    titleFr:'Comment naviguer',
+    titleEn:'How to navigate',
+    descFr:'Faites glisser votre doigt vers le haut ou le bas pour passer d\'une page à l\'autre. Les points à droite indiquent votre position.',
+    descEn:'Swipe your finger up or down to move between pages. The dots on the right show your current position.',
+    extra:'gestures'
+  },
+  {
+    icon:'🗺️',
+    titleFr:'Les 5 pages en détail',
+    titleEn:'The 5 pages in detail',
+    descFr:'Voici la liste complète des sections disponibles dans votre interface.',
+    descEn:'Here is the complete list of sections available in your interface.',
+    extra:'pageslist'
+  },
+  {
+    icon:'🔄',
+    titleFr:'Mise à jour automatique',
+    titleEn:'Automatic refresh',
+    descFr:'L\'interface se met à jour toutes les 3 secondes automatiquement. Vous voyez toujours l\'état réel de votre piscine en temps réel.',
+    descEn:'The interface updates every 3 seconds automatically. You always see the real state of your pool in real time.',
+    extra:'refresh'
+  },
+  {
+    icon:'📶',
+    titleFr:'Accessible partout',
+    titleEn:'Accessible anywhere',
+    descFr:'Connectez-vous depuis votre domicile, votre bureau ou en vacances. Votre piscine est toujours accessible depuis n\'importe quelle connexion internet.',
+    descEn:'Connect from home, the office, or on holiday. Your pool is always accessible from any internet connection.',
+    extra:'anywhere'
+  },
+];
+
+let current = 0;
+
+function buildDots() {
+  const el = document.getElementById('dots');
+  el.innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  document.getElementById('bg').style.background = gradients[current % gradients.length];
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'phonemock') {
+    const colors = ['#8B5CF6','#06B6D4','#EC4899','#1565C0','#F97316'];
+    let phonePages = pages.map((p,i) =>
+      `<div style="flex:0 0 100%;height:100%;background:${colors[i]};display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px">
+        <div style="font-size:22px">${p.icon}</div>
+        <div style="font-size:9px;font-weight:900;color:white;margin-top:4px">${p.fr}</div>
+      </div>`
+    ).join('');
+    extra = `
+      <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+        <div class="phone-mockup">
+          <div class="phone-notch"></div>
+          <div class="phone-screen" id="phoneScreen" style="display:flex;flex-direction:row;width:${pages.length*100}%;transition:transform 0.5s ease">
+            ${phonePages}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${pages.map((p,i) => `
+            <div style="display:flex;align-items:center;gap:6px;cursor:pointer;opacity:${i===0?1:0.5};transition:opacity 0.3s" onclick="showPage(${i})" id="pageTab${i}">
+              <span style="font-size:14px">${p.icon}</span>
+              <span style="font-size:11px;font-weight:900;color:white">${p.fr}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    setTimeout(() => autoScroll(), 100);
+
+  } else if (s.extra === 'gestures') {
+    extra = `<div class="gesture-demo">
+      <div class="gesture-row">
+        <div class="gesture-icon">👆⬆️</div>
+        <div>
+          <div class="gesture-text-fr">Glisser vers le haut → page suivante</div>
+          <div class="gesture-text-en">Swipe up → next page</div>
+        </div>
+      </div>
+      <div class="gesture-row">
+        <div class="gesture-icon">👆⬇️</div>
+        <div>
+          <div class="gesture-text-fr">Glisser vers le bas → page précédente</div>
+          <div class="gesture-text-en">Swipe down → previous page</div>
+        </div>
+      </div>
+      <div class="gesture-row">
+        <div class="gesture-icon">🔵</div>
+        <div>
+          <div class="gesture-text-fr">Points à droite → position actuelle</div>
+          <div class="gesture-text-en">Dots on right → current position</div>
+        </div>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'pageslist') {
+    extra = `<div class="pages-list">
+      ${pages.map((p,i) => `
+        <div class="page-row" style="animation-delay:${i*0.08}s">
+          <div class="page-num">${p.num}</div>
+          <div class="page-icon">${p.icon}</div>
+          <div class="page-text">
+            <div class="page-name-fr">${p.fr}</div>
+            <div class="page-name-en">${p.en}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  } else if (s.extra === 'refresh') {
+    extra = `<div style="margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px">
+        <div style="width:50px;height:50px;border-radius:50%;background:rgba(0,255,148,0.2);border:2px solid rgba(0,255,148,0.5);display:flex;align-items:center;justify-content:center;font-size:22px;animation:spin 3s linear infinite">🔄</div>
+        <div style="text-align:left">
+          <div style="font-size:13px;font-weight:900;color:white">Toutes les 3 secondes</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);font-style:italic">Every 3 seconds</div>
+        </div>
+      </div>
+      <div class="status-strip">
+        <span class="status-pill green">✓ Mode actuel</span>
+        <span class="status-pill green">✓ État vannes</span>
+        <span class="status-pill green">✓ Pompe</span>
+        <span class="status-pill green">✓ Programmation</span>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'anywhere') {
+    extra = `<div style="margin-top:12px">
+      <div class="status-strip">
+        <span class="status-pill">🏠 Domicile / Home</span>
+        <span class="status-pill">💼 Bureau / Office</span>
+        <span class="status-pill">🏖️ Vacances / Holiday</span>
+        <span class="status-pill">🚗 En route / Driving</span>
+      </div>
+      <div style="margin-top:12px;background:rgba(0,255,148,0.1);border:1.5px solid rgba(0,255,148,0.3);border-radius:12px;padding:10px 14px">
+        <div style="font-size:12px;font-weight:900;color:#00FF94">📡 Connexion sécurisée HTTPS</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);font-style:italic;margin-top:2px">Secure HTTPS connection</div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      <div class="step-desc-en">${s.descEn}</div>
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+}
+
+let autoScrollInterval = null;
+let currentPage = 0;
+
+function showPage(i) {
+  currentPage = i;
+  const screen = document.getElementById('phoneScreen');
+  if (screen) {
+    screen.style.transform = `translateX(-${i * (100/pages.length)}%)`;
+    pages.forEach((_,j) => {
+      const tab = document.getElementById(`pageTab${j}`);
+      if (tab) tab.style.opacity = j===i ? '1' : '0.5';
+    });
+  }
+}
+
+function autoScroll() {
+  if (autoScrollInterval) clearInterval(autoScrollInterval);
+  autoScrollInterval = setInterval(() => {
+    currentPage = (currentPage + 1) % pages.length;
+    showPage(currentPage);
+  }, 1500);
+}
+
+function goTo(i) {
+  if (autoScrollInterval) { clearInterval(autoScrollInterval); autoScrollInterval = null; }
+  current = i;
+  buildDots();
+  buildCard();
+}
+function next() {
+  if (current < steps.length - 1) {
+    if (autoScrollInterval) { clearInterval(autoScrollInterval); autoScrollInterval = null; }
+    current++;
+    buildDots();
+    buildCard();
+  }
+}
+function prev() {
+  if (current > 0) {
+    if (autoScrollInterval) { clearInterval(autoScrollInterval); autoScrollInterval = null; }
+    current--;
+    buildDots();
+    buildCard();
+  }
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

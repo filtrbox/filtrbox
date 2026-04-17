@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Statut Système</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg { position:fixed; inset:0; z-index:0; background:linear-gradient(135deg,#0a2a4a,#0f4c81,#1a6fa8); transition:background 1.2s ease; }
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble { position:absolute; bottom:-80px; border-radius:50%; background:rgba(255,255,255,0.12); animation:rise linear infinite; }
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise{0%{bottom:-80px;transform:translateX(0);opacity:0.8}50%{transform:translateX(40px)}100%{bottom:110vh;transform:translateX(-30px);opacity:0}}
+
+.waves { position:fixed; bottom:0; left:0; width:100%; height:20%; z-index:1; opacity:0.18; pointer-events:none; }
+.wave { position:absolute; bottom:0; left:0; width:200%; height:100%; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x; background-size:50% 100%; animation:wave 14s linear infinite; }
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px 16px 10px; gap:0; overflow-y:auto; }
+
+.logo { font-family:'Fredoka One',cursive; font-size:clamp(20px,3.8vw,40px); color:white; letter-spacing:5px; text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3); animation:wobble 3s ease-in-out infinite; margin-bottom:5px; }
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator { display:flex; gap:8px; margin-bottom:10px; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.4s ease; cursor:pointer; }
+.dot.active { background:white; transform:scale(1.4); box-shadow:0 0 10px rgba(255,255,255,0.6); }
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card { width:100%; max-width:500px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); border-radius:22px; padding:16px; backdrop-filter:blur(20px); box-shadow:0 20px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15); margin-bottom:10px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+
+.step-icon { font-size:clamp(32px,6vw,52px); margin-bottom:8px; animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.step-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(16px,3vw,22px); color:white; margin-bottom:2px; }
+.step-title-en { font-size:clamp(9px,1.6vw,12px); color:rgba(255,255,255,0.55); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.step-desc-fr { font-size:clamp(12px,1.9vw,14px); color:rgba(255,255,255,0.92); font-weight:700; line-height:1.55; margin-bottom:4px; }
+.step-desc-en { font-size:clamp(10px,1.5vw,12px); color:rgba(255,255,255,0.5); font-weight:700; line-height:1.4; font-style:italic; }
+
+.nav-row { display:flex; gap:12px; align-items:center; width:100%; max-width:500px; }
+.btn { flex:1; padding:12px; border-radius:14px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; font-family:'Nunito',sans-serif; font-size:14px; font-weight:900; cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px); }
+.btn:active{transform:scale(0.96)}
+.btn.primary { background:rgba(0,255,148,0.25); border-color:rgba(0,255,148,0.6); color:#00FF94; }
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; width:100%; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Status dashboard */
+.status-dashboard { width:100%; margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.status-row-box { background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12); border-radius:14px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.status-row-box.online { background:rgba(0,255,148,0.08); border-color:rgba(0,255,148,0.25); }
+.status-label-fr { font-size:13px; font-weight:900; color:white; }
+.status-label-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; }
+.status-badge { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:900; }
+.status-badge.green { background:rgba(0,255,148,0.2); border:1px solid rgba(0,255,148,0.4); color:#00FF94; }
+.status-badge.red { background:rgba(255,68,68,0.2); border:1px solid rgba(255,68,68,0.4); color:#FF6666; }
+.status-badge.blue { background:rgba(100,200,255,0.2); border:1px solid rgba(100,200,255,0.4); color:rgba(150,220,255,1); }
+
+/* Vannes grid */
+.vannes-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; margin-top:10px; }
+.vanne-card { border-radius:12px; padding:10px 6px; text-align:center; border:2px solid; }
+.vanne-card.open { background:rgba(0,255,148,0.12); border-color:rgba(0,255,148,0.4); }
+.vanne-card.closed { background:rgba(255,68,68,0.1); border-color:rgba(255,68,68,0.3); }
+.vanne-card.moving { background:rgba(255,165,0,0.12); border-color:rgba(255,165,0,0.4); animation:movingPulse 1s ease-in-out infinite; }
+@keyframes movingPulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.vanne-name { font-family:'Fredoka One',cursive; font-size:16px; color:white; }
+.vanne-state-fr { font-size:10px; font-weight:900; }
+.vanne-state-fr.open { color:#00FF94; }
+.vanne-state-fr.closed { color:#FF6666; }
+.vanne-state-fr.moving { color:rgba(255,200,100,1); }
+.vanne-state-en { font-size:9px; color:rgba(255,255,255,0.4); font-style:italic; }
+.vanne-icon { font-size:16px; margin-bottom:2px; }
+
+/* Pump status */
+.pump-status { width:100%; margin-top:10px; display:flex; gap:8px; }
+.pump-card { flex:1; border-radius:14px; padding:12px; text-align:center; border:2px solid; }
+.pump-card.on { background:rgba(0,255,148,0.12); border-color:rgba(0,255,148,0.4); }
+.pump-card.off { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.12); }
+.pump-icon { font-size:24px; margin-bottom:4px; }
+.pump-icon.spinning { animation:spin 2s linear infinite; display:inline-block; }
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.pump-label-fr { font-size:12px; font-weight:900; color:white; }
+.pump-label-en { font-size:9px; color:rgba(255,255,255,0.4); font-style:italic; }
+.pump-state { font-family:'Fredoka One',cursive; font-size:16px; margin-top:4px; }
+
+/* Mode display */
+.mode-display { width:100%; margin-top:10px; background:rgba(0,0,0,0.2); border:2px solid rgba(255,255,255,0.12); border-radius:14px; padding:14px; text-align:center; }
+.mode-current-label { font-size:11px; color:rgba(255,255,255,0.5); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.mode-current-value { font-family:'Fredoka One',cursive; font-size:26px; color:white; margin-bottom:4px; }
+.mode-current-en { font-size:11px; color:rgba(255,255,255,0.4); font-style:italic; }
+.mode-indicator { width:12px; height:12px; border-radius:50%; background:#00FF94; display:inline-block; margin-right:6px; animation:blink 1.5s ease-in-out infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Connection status */
+.conn-status { width:100%; margin-top:10px; }
+.conn-row { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12); border-radius:12px; padding:10px 14px; margin-bottom:7px; }
+.conn-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.conn-dot.green { background:#00FF94; box-shadow:0 0 8px rgba(0,255,148,0.6); animation:blink 2s ease-in-out infinite; }
+.conn-dot.orange { background:rgba(255,165,0,1); box-shadow:0 0 8px rgba(255,165,0,0.6); }
+.conn-dot.red { background:#FF4444; }
+.conn-label-fr { font-size:12px; font-weight:900; color:white; }
+.conn-label-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; }
+.conn-time { font-family:'Fredoka One',cursive; font-size:14px; color:rgba(255,255,255,0.6); margin-left:auto; }
+
+/* Tips */
+.tip-box { background:rgba(0,100,255,0.12); border:1.5px solid rgba(100,180,255,0.3); border-radius:14px; padding:12px 14px; margin-top:10px; display:flex; gap:10px; align-items:flex-start; text-align:left; }
+.tip-icon { font-size:20px; flex-shrink:0; }
+.tip-fr { font-size:12px; font-weight:900; color:rgba(150,210,255,1); line-height:1.5; }
+.tip-en { font-size:10px; color:rgba(100,180,255,0.6); font-style:italic; margin-top:2px; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+  <div class="step-indicator" id="dots"></div>
+  <div class="card" id="card"></div>
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    icon:'📊',
+    titleFr:'Le statut système',
+    titleEn:'System status',
+    descFr:'La page 4 affiche l\'état en temps réel de votre installation : mode actuel, état de la pompe, et position de chaque vanne.',
+    descEn:'Page 4 shows the real-time status of your installation: current mode, pump status, and position of each valve.',
+    extra:'overview'
+  },
+  {
+    icon:'🔵',
+    titleFr:'Les 6 vannes',
+    titleEn:'The 6 valves',
+    descFr:'Chaque vanne a deux positions : ouverte ou fermée. La combinaison des positions détermine le mode de fonctionnement de l\'installation.',
+    descEn:'Each valve has two positions: open or closed. The combination of positions determines the operating mode of the installation.',
+    extra:'vannes'
+  },
+  {
+    icon:'🌀',
+    titleFr:'La pompe',
+    titleEn:'The pump',
+    descFr:'La pompe est le cœur de l\'installation. Elle fait circuler l\'eau dans le circuit. Son état (marche/arrêt) est visible en temps réel.',
+    descEn:'The pump is the heart of the installation. It circulates water through the circuit. Its status (on/off) is visible in real time.',
+    extra:'pump'
+  },
+  {
+    icon:'📡',
+    titleFr:'Connexion en temps réel',
+    titleEn:'Real-time connection',
+    descFr:'Votre interface se met à jour automatiquement toutes les 3 secondes. Vous voyez toujours l\'état exact de votre installation.',
+    descEn:'Your interface updates automatically every 3 seconds. You always see the exact status of your installation.',
+    extra:'connection'
+  },
+  {
+    icon:'💡',
+    titleFr:'Conseils de lecture',
+    titleEn:'Reading tips',
+    descFr:'Quelques conseils pour bien interpréter les informations affichées et réagir en cas de situation anormale.',
+    descEn:'Some tips for properly interpreting the displayed information and reacting in case of an abnormal situation.',
+    extra:'tips'
+  },
+];
+
+let current = 0;
+
+function buildDots() {
+  document.getElementById('dots').innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'overview') {
+    extra = `<div class="status-dashboard">
+      <div class="status-row-box online">
+        <div>
+          <div class="status-label-fr">Mode actuel / Current mode</div>
+          <div class="status-label-en">Updated every 3 seconds</div>
+        </div>
+        <div class="status-badge blue"><span class="mode-indicator"></span>Filtration</div>
+      </div>
+      <div class="status-row-box online">
+        <div>
+          <div class="status-label-fr">Pompe / Pump</div>
+          <div class="status-label-en">Circulation active</div>
+        </div>
+        <div class="status-badge green">ON ✓</div>
+      </div>
+      <div class="status-row-box">
+        <div>
+          <div class="status-label-fr">Programmation / Schedule</div>
+          <div class="status-label-en">08:00 → 18:00</div>
+        </div>
+        <div class="status-badge green">Active</div>
+      </div>
+      <div class="status-row-box">
+        <div>
+          <div class="status-label-fr">Cycle lavage / Wash cycle</div>
+          <div class="status-label-en">Every 7 days at 10:00</div>
+        </div>
+        <div class="status-badge green">Active</div>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'vannes') {
+    const vannes = [
+      {name:'V1',state:'open',fr:'Ouverte',en:'Open'},
+      {name:'V2',state:'closed',fr:'Fermée',en:'Closed'},
+      {name:'V3',state:'closed',fr:'Fermée',en:'Closed'},
+      {name:'V4',state:'open',fr:'Ouverte',en:'Open'},
+      {name:'V5',state:'closed',fr:'Fermée',en:'Closed'},
+      {name:'V6',state:'open',fr:'Ouverte',en:'Open'},
+    ];
+    const icons = {open:'🟢',closed:'🔴',moving:'🟡'};
+    extra = `<div class="vannes-grid">
+      ${vannes.map(v => `
+        <div class="vanne-card ${v.state}">
+          <div class="vanne-icon">${icons[v.state]}</div>
+          <div class="vanne-name">${v.name}</div>
+          <div class="vanne-state-fr ${v.state}">${v.fr}</div>
+          <div class="vanne-state-en">${v.en}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <span style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:700">🟢 Ouverte/Open</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:700">🔴 Fermée/Closed</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:700">🟡 En mouvement/Moving</span>
+    </div>`;
+
+  } else if (s.extra === 'pump') {
+    extra = `<div class="pump-status">
+      <div class="pump-card on">
+        <div class="pump-icon spinning">🌀</div>
+        <div class="pump-label-fr">Pompe en marche</div>
+        <div class="pump-label-en">Pump running</div>
+        <div class="pump-state" style="color:#00FF94">ON</div>
+      </div>
+      <div class="pump-card off">
+        <div class="pump-icon">⭕</div>
+        <div class="pump-label-fr">Pompe arrêtée</div>
+        <div class="pump-label-en">Pump stopped</div>
+        <div class="pump-state" style="color:rgba(255,255,255,0.4)">OFF</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.7);font-weight:700;text-align:left">
+      ⚠️ La pompe ne démarre qu'après que toutes les vannes ont atteint leur position.<br>
+      <span style="color:rgba(255,255,255,0.4);font-style:italic">The pump only starts after all valves have reached their position.</span>
+    </div>`;
+
+  } else if (s.extra === 'connection') {
+    extra = `<div class="conn-status">
+      <div class="conn-row">
+        <div class="conn-dot green"></div>
+        <div>
+          <div class="conn-label-fr">Pi connecté au cloud</div>
+          <div class="conn-label-en">Pi connected to cloud</div>
+        </div>
+        <div class="conn-time">3s</div>
+      </div>
+      <div class="conn-row">
+        <div class="conn-dot orange"></div>
+        <div>
+          <div class="conn-label-fr">Connexion lente</div>
+          <div class="conn-label-en">Slow connection</div>
+        </div>
+        <div class="conn-time">15s</div>
+      </div>
+      <div class="conn-row">
+        <div class="conn-dot red"></div>
+        <div>
+          <div class="conn-label-fr">Pi hors ligne</div>
+          <div class="conn-label-en">Pi offline</div>
+        </div>
+        <div class="conn-time">+30s</div>
+      </div>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;text-align:center">
+      💡 En cas de coupure internet, l'installation continue de fonctionner localement.<br>
+      <span style="font-style:italic;color:rgba(255,255,255,0.35)">In case of internet outage, the installation continues to work locally.</span>
+    </div>`;
+
+  } else if (s.extra === 'tips') {
+    extra = `<div style="width:100%;margin-top:8px;display:flex;flex-direction:column;gap:7px">
+      <div class="tip-box">
+        <div class="tip-icon">🟡</div>
+        <div>
+          <div class="tip-fr">Si une vanne est "En mouvement" pendant plus de 30 secondes, contactez votre installateur.</div>
+          <div class="tip-en">If a valve is "Moving" for more than 30 seconds, contact your installer.</div>
+        </div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-icon">🔴</div>
+        <div>
+          <div class="tip-fr">Si le Pi est "Hors ligne", vérifiez que la box internet et le Pi sont allumés.</div>
+          <div class="tip-en">If the Pi is "Offline", check that the internet box and Pi are powered on.</div>
+        </div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-icon">✅</div>
+        <div>
+          <div class="tip-fr">Un statut "En ligne" avec la pompe ON et les bonnes vannes = installation parfaite !</div>
+          <div class="tip-en">Online status with pump ON and correct valves = perfect installation!</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      <div class="step-desc-en">${s.descEn}</div>
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+}
+
+function goTo(i) { current=i; buildDots(); buildCard(); }
+function next() { if(current<steps.length-1){current++;buildDots();buildCard();} }
+function prev() { if(current>0){current--;buildDots();buildCard();} }
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

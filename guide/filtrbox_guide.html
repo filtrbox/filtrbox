@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg { position:fixed; inset:0; z-index:0; background:linear-gradient(135deg,#0f4c81,#1a6fa8,#0a2a4a); }
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble { position:absolute; bottom:-80px; border-radius:50%; background:rgba(255,255,255,0.12); animation:rise linear infinite; }
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise{0%{bottom:-80px;transform:translateX(0);opacity:0.8}50%{transform:translateX(40px)}100%{bottom:110vh;transform:translateX(-30px);opacity:0}}
+
+.waves { position:fixed; bottom:0; left:0; width:100%; height:20%; z-index:1; opacity:0.18; pointer-events:none; }
+.wave { position:absolute; bottom:0; left:0; width:200%; height:100%; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x; background-size:50% 100%; animation:wave 14s linear infinite; }
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#main { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; padding:16px 16px 16px; overflow-y:auto; }
+
+.logo { font-family:'Fredoka One',cursive; font-size:clamp(26px,5vw,50px); color:white; letter-spacing:5px; text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3); animation:wobble 3s ease-in-out infinite; margin-bottom:4px; }
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.subtitle { font-size:clamp(10px,1.8vw,13px); color:rgba(255,255,255,0.7); font-weight:700; text-transform:uppercase; letter-spacing:3px; margin-bottom:14px; }
+.guide-title { font-family:'Fredoka One',cursive; font-size:clamp(17px,3.2vw,26px); color:white; margin-bottom:3px; }
+.guide-sub { font-size:clamp(10px,1.8vw,12px); color:rgba(255,255,255,0.55); font-weight:700; font-style:italic; margin-bottom:12px; }
+
+.progress-bar-wrap { width:100%; max-width:480px; margin-bottom:12px; }
+.progress-label { font-size:11px; color:rgba(255,255,255,0.6); font-weight:700; margin-bottom:5px; display:flex; justify-content:space-between; }
+.progress-bar { height:7px; background:rgba(255,255,255,0.15); border-radius:4px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,rgba(0,255,148,0.7),rgba(0,255,148,1)); border-radius:4px; transition:width 0.5s ease; }
+
+.cards-grid { display:flex; flex-direction:column; gap:8px; width:100%; max-width:480px; }
+
+.anim-card {
+  background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.18);
+  border-radius:16px; padding:12px 14px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer; transition:all 0.2s; backdrop-filter:blur(15px);
+  animation:slideUp 0.4s ease forwards; opacity:0;
+}
+.anim-card:active { transform:scale(0.97); }
+.anim-card:hover { background:rgba(255,255,255,0.16); border-color:rgba(255,255,255,0.3); }
+.anim-card.done { border-color:rgba(0,255,148,0.4); background:rgba(0,255,148,0.06); }
+
+.card-num { font-family:'Fredoka One',cursive; font-size:13px; color:rgba(255,255,255,0.35); min-width:18px; }
+.card-icon { font-size:26px; flex-shrink:0; }
+.card-text { flex:1; }
+.card-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(13px,2.4vw,16px); color:white; }
+.card-title-en { font-size:clamp(9px,1.5vw,11px); color:rgba(255,255,255,0.45); font-style:italic; margin-top:1px; }
+.card-arrow { font-size:18px; color:rgba(255,255,255,0.35); }
+.card-check { font-size:16px; }
+@keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+.footer { margin-top:10px; font-size:10px; color:rgba(255,255,255,0.3); font-weight:700; text-align:center; padding-bottom:6px; }
+
+#overlay { position:fixed; inset:0; z-index:100; display:none; flex-direction:column; background:#000; }
+#overlay.active { display:flex; }
+
+#overlay-header {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.1); flex-shrink:0;
+}
+.back-btn { background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.25); border-radius:10px; padding:6px 12px; color:white; font-family:'Nunito',sans-serif; font-size:13px; font-weight:900; cursor:pointer; transition:all 0.2s; }
+.back-btn:active { transform:scale(0.96); }
+.overlay-title { font-family:'Fredoka One',cursive; font-size:15px; color:white; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nav-btns { display:flex; gap:6px; }
+.nav-small { background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.2); border-radius:8px; padding:5px 10px; color:white; font-size:13px; font-weight:900; cursor:pointer; transition:all 0.2s; }
+.nav-small:disabled { opacity:0.3; cursor:default; }
+.nav-small:active { transform:scale(0.95); }
+#anim-frame { flex:1; border:none; width:100%; }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="main">
+  <div class="logo">FILTRBOX</div>
+  <div class="subtitle">Smart Pool Control</div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>Progression / Progress</span>
+      <span id="progress-count">0 / 7</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="guide-title">Guide d'utilisation</div>
+  <div class="guide-sub">User guide — FR / EN</div>
+
+  <div class="cards-grid" id="cards-grid"></div>
+
+  <div class="footer">FILTRBOX © 2026 — Smart Pool Control</div>
+</div>
+
+<div id="overlay">
+  <div id="overlay-header">
+    <button class="back-btn" onclick="closeAnim()">← Menu</button>
+    <div class="overlay-title" id="overlay-title">—</div>
+    <div class="nav-btns">
+      <button class="nav-small" id="btnNavPrev" onclick="navAnim(-1)">◀</button>
+      <button class="nav-small" id="btnNavNext" onclick="navAnim(1)">▶</button>
+    </div>
+  </div>
+  <iframe id="anim-frame" src="about:blank"></iframe>
+</div>
+
+<script>
+const anims = [
+  { icon:'🏊', fr:'Première connexion',   en:'First connection',  file:'/guide/filtrbox_anim_01_connexion.html' },
+  { icon:'📱', fr:'Interface globale',     en:'Global interface',  file:'/guide/filtrbox_anim_02_interface.html' },
+  { icon:'💧', fr:'Mode Filtration',       en:'Filtration mode',   file:'/guide/filtrbox_anim_03_filtration.html' },
+  { icon:'🧹', fr:'Cycle Lavage/Rinçage', en:'Wash/Rinse cycle',  file:'/guide/filtrbox_anim_04_lavage.html' },
+  { icon:'🎮', fr:'Modes manuels',         en:'Manual modes',      file:'/guide/filtrbox_anim_05_modes.html' },
+  { icon:'📊', fr:'Statut système',        en:'System status',     file:'/guide/filtrbox_anim_06_statut.html' },
+  { icon:'⚡', fr:'Le contact AUX',        en:'The AUX contact',   file:'/guide/filtrbox_anim_07_aux.html' },
+];
+
+let viewed = JSON.parse(localStorage.getItem('filtrbox_viewed') || '[]');
+let currentAnim = 0;
+
+function saveViewed(i) {
+  if (!viewed.includes(i)) { viewed.push(i); localStorage.setItem('filtrbox_viewed', JSON.stringify(viewed)); }
+}
+
+function updateProgress() {
+  const count = viewed.length;
+  const pct = Math.round((count / anims.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-count').textContent = count + ' / ' + anims.length;
+}
+
+function buildCards() {
+  document.getElementById('cards-grid').innerHTML = anims.map((a, i) => `
+    <div class="anim-card ${viewed.includes(i)?'done':''}" onclick="openAnim(${i})" style="animation-delay:${i*0.06}s">
+      <div class="card-num">${i+1}</div>
+      <div class="card-icon">${a.icon}</div>
+      <div class="card-text">
+        <div class="card-title-fr">${a.fr}</div>
+        <div class="card-title-en">${a.en}</div>
+      </div>
+      ${viewed.includes(i) ? '<div class="card-check">✅</div>' : '<div class="card-arrow">›</div>'}
+    </div>`
+  ).join('');
+  updateProgress();
+}
+
+function openAnim(i) {
+  currentAnim = i;
+  const a = anims[i];
+  document.getElementById('overlay').classList.add('active');
+  document.getElementById('overlay-title').textContent = a.icon + ' ' + a.fr;
+  document.getElementById('anim-frame').src = a.file;
+  document.getElementById('btnNavPrev').disabled = i === 0;
+  document.getElementById('btnNavNext').disabled = i === anims.length - 1;
+  saveViewed(i);
+  buildCards();
+}
+
+function closeAnim() {
+  document.getElementById('overlay').classList.remove('active');
+  document.getElementById('anim-frame').src = 'about:blank';
+}
+
+function navAnim(dir) {
+  const next = currentAnim + dir;
+  if (next >= 0 && next < anims.length) openAnim(next);
+}
+
+buildCards();
+</script>
+</body>
+</html>

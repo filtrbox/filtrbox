@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FILTRBOX — Contact AUX</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#bg { position:fixed; inset:0; z-index:0; background:linear-gradient(135deg,#004d40,#00695c,#0a3d6b); transition:background 1.2s ease; }
+
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble { position:absolute; bottom:-80px; border-radius:50%; background:rgba(255,255,255,0.12); animation:rise linear infinite; }
+.bubble:nth-child(1){width:28px;height:28px;left:8%;animation-duration:9s}
+.bubble:nth-child(2){width:18px;height:18px;left:22%;animation-duration:12s;animation-delay:2s}
+.bubble:nth-child(3){width:40px;height:40px;left:38%;animation-duration:10s;animation-delay:4s}
+.bubble:nth-child(4){width:22px;height:22px;left:55%;animation-duration:14s;animation-delay:1s}
+.bubble:nth-child(5){width:35px;height:35px;left:72%;animation-duration:11s;animation-delay:3s}
+.bubble:nth-child(6){width:16px;height:16px;left:88%;animation-duration:8s;animation-delay:5s}
+@keyframes rise{0%{bottom:-80px;transform:translateX(0);opacity:0.8}50%{transform:translateX(40px)}100%{bottom:110vh;transform:translateX(-30px);opacity:0}}
+
+.waves { position:fixed; bottom:0; left:0; width:100%; height:20%; z-index:1; opacity:0.18; pointer-events:none; }
+.wave { position:absolute; bottom:0; left:0; width:200%; height:100%; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='white'/%3E%3C/svg%3E") repeat-x; background-size:50% 100%; animation:wave 14s linear infinite; }
+.wave:nth-child(2){bottom:8px;animation:wave 20s linear reverse infinite;opacity:0.5}
+.wave:nth-child(3){bottom:16px;animation:wave 26s linear infinite;opacity:0.3}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+#app { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px 16px 10px; gap:0; overflow-y:auto; }
+
+.logo { font-family:'Fredoka One',cursive; font-size:clamp(20px,3.8vw,40px); color:white; letter-spacing:5px; text-shadow:0 0 30px rgba(255,255,255,0.5),3px 3px 0 rgba(0,0,0,0.3); animation:wobble 3s ease-in-out infinite; margin-bottom:5px; }
+@keyframes wobble{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.03)}}
+
+.step-indicator { display:flex; gap:8px; margin-bottom:10px; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.4s ease; cursor:pointer; }
+.dot.active { background:white; transform:scale(1.4); box-shadow:0 0 10px rgba(255,255,255,0.6); }
+.dot.done { background:rgba(0,255,148,0.7); }
+
+.card { width:100%; max-width:500px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); border-radius:22px; padding:16px; backdrop-filter:blur(20px); box-shadow:0 20px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15); margin-bottom:10px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+
+.step-icon { font-size:clamp(32px,6vw,52px); margin-bottom:8px; animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes iconPop{0%{transform:scale(0.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.step-title-fr { font-family:'Fredoka One',cursive; font-size:clamp(16px,3vw,22px); color:white; margin-bottom:2px; }
+.step-title-en { font-size:clamp(9px,1.6vw,12px); color:rgba(255,255,255,0.55); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.step-desc-fr { font-size:clamp(12px,1.9vw,14px); color:rgba(255,255,255,0.92); font-weight:700; line-height:1.55; margin-bottom:4px; }
+.step-desc-en { font-size:clamp(10px,1.5vw,12px); color:rgba(255,255,255,0.5); font-weight:700; line-height:1.4; font-style:italic; }
+
+.nav-row { display:flex; gap:12px; align-items:center; width:100%; max-width:500px; }
+.btn { flex:1; padding:12px; border-radius:14px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; font-family:'Nunito',sans-serif; font-size:14px; font-weight:900; cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px); }
+.btn:active{transform:scale(0.96)}
+.btn.primary { background:rgba(0,255,148,0.25); border-color:rgba(0,255,148,0.6); color:#00FF94; }
+.btn:disabled{opacity:0.3;cursor:default}
+
+.fade-enter { animation:fadeIn 0.4s ease forwards; width:100%; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* AUX signal demo */
+.aux-demo { width:100%; margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.aux-signal {
+  display:flex; align-items:center; gap:12px;
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.12);
+  border-radius:14px; padding:10px 14px;
+  transition:all 0.4s ease;
+}
+.aux-signal.on { background:rgba(0,255,148,0.12); border-color:rgba(0,255,148,0.4); }
+.aux-signal.off { background:rgba(255,68,68,0.08); border-color:rgba(255,68,68,0.25); }
+.aux-led {
+  width:16px; height:16px; border-radius:50%; flex-shrink:0;
+  transition:all 0.4s ease;
+}
+.aux-led.on { background:#00FF94; box-shadow:0 0 10px rgba(0,255,148,0.8); animation:ledBlink 2s ease-in-out infinite; }
+.aux-led.off { background:#FF4444; box-shadow:none; }
+@keyframes ledBlink{0%,100%{opacity:1}50%{opacity:0.5}}
+.aux-mode-fr { font-size:13px; font-weight:900; color:white; }
+.aux-mode-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; }
+.aux-state { font-family:'Fredoka One',cursive; font-size:16px; margin-left:auto; }
+.aux-state.on { color:#00FF94; }
+.aux-state.off { color:#FF4444; }
+
+/* Equipment list */
+.equip-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:10px; }
+.equip-card {
+  background:rgba(255,255,255,0.08);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:14px; padding:12px 8px;
+  text-align:center;
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  opacity:0;
+}
+@keyframes popIn{0%{transform:scale(0.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.equip-icon { font-size:24px; margin-bottom:5px; }
+.equip-fr { font-size:12px; font-weight:900; color:white; }
+.equip-en { font-size:10px; color:rgba(255,255,255,0.45); font-style:italic; }
+
+/* Interactive demo */
+.mode-selector { width:100%; margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+.mode-select-btn {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.12);
+  border-radius:12px; padding:8px 12px;
+  cursor:pointer; transition:all 0.2s;
+}
+.mode-select-btn.selected-on { background:rgba(0,255,148,0.15); border-color:rgba(0,255,148,0.5); }
+.mode-select-btn.selected-off { background:rgba(255,68,68,0.12); border-color:rgba(255,68,68,0.4); }
+.mode-sel-icon { font-size:18px; }
+.mode-sel-fr { font-size:12px; font-weight:900; color:white; flex:1; text-align:left; }
+.mode-sel-aux { font-family:'Fredoka One',cursive; font-size:14px; }
+.mode-sel-aux.on { color:#00FF94; }
+.mode-sel-aux.off { color:#FF4444; }
+
+/* Safety box */
+.safety-box { width:100%; margin-top:10px; background:rgba(255,165,0,0.12); border:2px solid rgba(255,165,0,0.35); border-radius:14px; padding:12px 14px; text-align:left; }
+.safety-title { font-family:'Fredoka One',cursive; font-size:16px; color:rgba(255,200,100,1); margin-bottom:8px; }
+.safety-row { display:flex; gap:8px; align-items:flex-start; margin-bottom:7px; }
+.safety-row:last-child { margin-bottom:0; }
+.safety-ico { font-size:16px; flex-shrink:0; margin-top:1px; }
+.safety-fr { font-size:12px; font-weight:900; color:rgba(255,220,150,1); line-height:1.5; }
+.safety-en { font-size:10px; color:rgba(255,165,0,0.6); font-style:italic; margin-top:1px; }
+
+/* Summary table */
+.summary-table { width:100%; margin-top:10px; border-radius:14px; overflow:hidden; }
+.sum-row { display:flex; align-items:center; padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.sum-row:last-child { border-bottom:none; }
+.sum-row.header { background:rgba(255,255,255,0.12); }
+.sum-mode { flex:2; font-size:12px; font-weight:900; color:white; display:flex; align-items:center; gap:6px; }
+.sum-aux { flex:1; text-align:center; }
+.sum-why { flex:3; font-size:10px; color:rgba(255,255,255,0.55); font-style:italic; }
+.sum-badge { padding:3px 8px; border-radius:10px; font-size:11px; font-weight:900; display:inline-block; }
+.sum-badge.on { background:rgba(0,255,148,0.2); color:#00FF94; border:1px solid rgba(0,255,148,0.4); }
+.sum-badge.off { background:rgba(255,68,68,0.15); color:#FF6666; border:1px solid rgba(255,68,68,0.3); }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="waves">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<div id="app">
+  <div class="logo">FILTRBOX</div>
+  <div class="step-indicator" id="dots"></div>
+  <div class="card" id="card"></div>
+  <div class="nav-row">
+    <button class="btn" id="btnPrev" onclick="prev()">← Retour</button>
+    <button class="btn primary" id="btnNext" onclick="next()">Suivant →</button>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    icon:'⚡',
+    titleFr:'Le contact AUX',
+    titleEn:'The AUX contact',
+    descFr:'Le contact AUX est un signal d\'autorisation. Il indique à vos équipements de régulation qu\'ils peuvent fonctionner en toute sécurité.',
+    descEn:'The AUX contact is an authorization signal. It tells your regulation equipment that it can operate safely.',
+    extra:'intro'
+  },
+  {
+    icon:'🔧',
+    titleFr:'Équipements concernés',
+    titleEn:'Connected equipment',
+    descFr:'Le contact AUX pilote tous les systèmes qui traitent l\'eau de votre piscine. Il les autorise uniquement quand l\'eau circule correctement.',
+    descEn:'The AUX contact controls all systems that treat your pool water. It authorizes them only when water is circulating correctly.',
+    extra:'equipment'
+  },
+  {
+    icon:'🎛️',
+    titleFr:'Quand est-il actif ?',
+    titleEn:'When is it active?',
+    descFr:'Testez chaque mode pour voir si le contact AUX est autorisé ou non. Seuls les modes avec circulation normale l\'activent.',
+    descEn:'Test each mode to see if the AUX contact is authorized or not. Only modes with normal circulation activate it.',
+    extra:'interactive'
+  },
+  {
+    icon:'🛡️',
+    titleFr:'Pourquoi cette sécurité ?',
+    titleEn:'Why this safety feature?',
+    descFr:'Sans ce contact, un électrolyseur ou une pompe doseuse pourrait injecter des produits chimiques sans circulation d\'eau, créant une concentration dangereuse.',
+    descEn:'Without this contact, an electrolyzer or dosing pump could inject chemicals without water circulation, creating a dangerous concentration.',
+    extra:'safety'
+  },
+  {
+    icon:'📋',
+    titleFr:'Récapitulatif',
+    titleEn:'Summary',
+    descFr:'Voici l\'état du contact AUX pour chaque mode de fonctionnement de votre installation FILTRBOX.',
+    descEn:'Here is the AUX contact status for each operating mode of your FILTRBOX installation.',
+    extra:'summary'
+  },
+];
+
+const modeAux = [
+  {icon:'💧', fr:'Filtration', en:'Filtration', aux:true, why:'Circulation normale'},
+  {icon:'🔁', fr:'Recirculation', en:'Recirculation', aux:true, why:'Diffusion rapide produits'},
+  {icon:'🧹', fr:'Lavage', en:'Wash', aux:false, why:'Eau rejetée à l\'égout'},
+  {icon:'💦', fr:'Rinçage', en:'Rinse', aux:false, why:'Eau rejetée à l\'égout'},
+  {icon:'🚰', fr:'Vidange', en:'Drain', aux:false, why:'Vidange piscine'},
+  {icon:'❄️', fr:'Hivernage', en:'Winterize', aux:false, why:'Pompe arrêtée'},
+  {icon:'⏹️', fr:'Arrêt', en:'Stop', aux:false, why:'Aucune circulation'},
+];
+
+let current = 0;
+let selectedMode = 0;
+
+function buildDots() {
+  document.getElementById('dots').innerHTML = steps.map((_,i) =>
+    `<div class="dot ${i===current?'active':i<current?'done':''}" onclick="goTo(${i})"></div>`
+  ).join('');
+}
+
+function buildCard() {
+  const s = steps[current];
+  let extra = '';
+
+  if (s.extra === 'intro') {
+    extra = `<div class="aux-demo">
+      <div class="aux-signal on">
+        <div class="aux-led on"></div>
+        <div>
+          <div class="aux-mode-fr">Mode Filtration en cours</div>
+          <div class="aux-mode-en">Filtration mode running</div>
+        </div>
+        <div class="aux-state on">AUX ON</div>
+      </div>
+      <div style="text-align:center;font-size:20px;color:rgba(255,255,255,0.3)">↓</div>
+      <div style="background:rgba(0,255,148,0.08);border:1.5px solid rgba(0,255,148,0.25);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">✅</span>
+        <div style="text-align:left">
+          <div style="font-size:12px;font-weight:900;color:#00FF94">Régulation autorisée</div>
+          <div style="font-size:10px;color:rgba(0,255,148,0.6);font-style:italic">Regulation authorized — chlore, pH, électrolyse...</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:14px;color:rgba(255,255,255,0.4)">— vs —</div>
+      <div class="aux-signal off">
+        <div class="aux-led off"></div>
+        <div>
+          <div class="aux-mode-fr">Mode Lavage en cours</div>
+          <div class="aux-mode-en">Wash mode running</div>
+        </div>
+        <div class="aux-state off">AUX OFF</div>
+      </div>
+      <div style="text-align:center;font-size:20px;color:rgba(255,255,255,0.3)">↓</div>
+      <div style="background:rgba(255,68,68,0.08);border:1.5px solid rgba(255,68,68,0.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">⛔</span>
+        <div style="text-align:left">
+          <div style="font-size:12px;font-weight:900;color:#FF6666">Régulation bloquée</div>
+          <div style="font-size:10px;color:rgba(255,100,100,0.6);font-style:italic">Regulation blocked — eau rejetée / water discharged</div>
+        </div>
+      </div>
+    </div>`;
+
+  } else if (s.extra === 'equipment') {
+    const equips = [
+      {icon:'🧪', fr:'Électrolyseur au sel', en:'Salt electrolyzer'},
+      {icon:'⚗️', fr:'Pompe doseuse chlore', en:'Chlorine dosing pump'},
+      {icon:'🔬', fr:'Régulateur pH', en:'pH regulator'},
+      {icon:'🔥', fr:'Système de chauffage', en:'Heating system'},
+      {icon:'🌡️', fr:'Pompe à chaleur', en:'Heat pump'},
+      {icon:'💊', fr:'Traitement automatique', en:'Auto treatment'},
+    ];
+    extra = `<div class="equip-grid">
+      ${equips.map((e,i) => `
+        <div class="equip-card" style="animation-delay:${i*0.08}s">
+          <div class="equip-icon">${e.icon}</div>
+          <div class="equip-fr">${e.fr}</div>
+          <div class="equip-en">${e.en}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:10px;background:rgba(0,255,148,0.08);border:1.5px solid rgba(0,255,148,0.2);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:rgba(150,255,200,1);text-align:center">
+      ⚡ Tous ces équipements sont pilotés par le contact AUX<br>
+      <span style="color:rgba(0,255,148,0.5);font-style:italic">All this equipment is controlled by the AUX contact</span>
+    </div>`;
+
+  } else if (s.extra === 'interactive') {
+    extra = `<div class="mode-selector" id="modeSelector">
+      ${modeAux.map((m,i) => `
+        <div class="mode-select-btn ${i===selectedMode?(m.aux?'selected-on':'selected-off'):''}"
+             onclick="selectMode(${i})">
+          <div class="mode-sel-icon">${m.icon}</div>
+          <div class="mode-sel-fr">${m.fr}</div>
+          <div class="mode-sel-aux ${m.aux?'on':'off'}">AUX ${m.aux?'ON':'OFF'}</div>
+        </div>`).join('')}
+    </div>`;
+
+  } else if (s.extra === 'safety') {
+    extra = `<div class="safety-box">
+      <div class="safety-title">⚠️ Sans le contact AUX...</div>
+      <div class="safety-row">
+        <div class="safety-ico">🧪</div>
+        <div>
+          <div class="safety-fr">L'électrolyseur injecterait du chlore dans de l'eau stagnante → concentration dangereuse</div>
+          <div class="safety-en">The electrolyzer would inject chlorine into stagnant water → dangerous concentration</div>
+        </div>
+      </div>
+      <div class="safety-row">
+        <div class="safety-ico">⚗️</div>
+        <div>
+          <div class="safety-fr">La pompe doseuse injecterait du pH moins sans circulation → brûlures possibles</div>
+          <div class="safety-en">The dosing pump would inject pH down without circulation → possible burns</div>
+        </div>
+      </div>
+      <div class="safety-row">
+        <div class="safety-ico">🔥</div>
+        <div>
+          <div class="safety-fr">Le chauffage fonctionnerait sans eau en mouvement → surchauffe de l'échangeur</div>
+          <div class="safety-en">The heater would run without water movement → heat exchanger overheating</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:8px;background:rgba(0,255,148,0.1);border:1.5px solid rgba(0,255,148,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:#00FF94;text-align:center">
+      ✅ FILTRBOX protège automatiquement votre installation<br>
+      <span style="color:rgba(0,255,148,0.5);font-style:italic">FILTRBOX automatically protects your installation</span>
+    </div>`;
+
+  } else if (s.extra === 'summary') {
+    extra = `<div class="summary-table">
+      <div class="sum-row header">
+        <div class="sum-mode" style="font-size:11px;color:rgba(255,255,255,0.6)">Mode</div>
+        <div class="sum-aux" style="font-size:11px;color:rgba(255,255,255,0.6)">AUX</div>
+        <div class="sum-why" style="font-size:11px;color:rgba(255,255,255,0.6)">Pourquoi / Why</div>
+      </div>
+      ${modeAux.map(m => `
+        <div class="sum-row" style="background:${m.aux?'rgba(0,255,148,0.05)':'rgba(255,255,255,0.03)'}">
+          <div class="sum-mode">${m.icon} ${m.fr}</div>
+          <div class="sum-aux"><span class="sum-badge ${m.aux?'on':'off'}">${m.aux?'ON':'OFF'}</span></div>
+          <div class="sum-why">${m.why}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('card').innerHTML = `
+    <div class="fade-enter">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-title-fr">${s.titleFr}</div>
+      <div class="step-title-en">${s.titleEn}</div>
+      <div class="step-desc-fr">${s.descFr}</div>
+      <div class="step-desc-en">${s.descEn}</div>
+      ${extra}
+    </div>`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').textContent = current === steps.length-1 ? '✓ Terminé / Done' : 'Suivant → / Next →';
+}
+
+function selectMode(i) {
+  selectedMode = i;
+  const selector = document.getElementById('modeSelector');
+  if (!selector) return;
+  selector.querySelectorAll('.mode-select-btn').forEach((btn, j) => {
+    btn.className = 'mode-select-btn';
+    if (j === i) btn.classList.add(modeAux[j].aux ? 'selected-on' : 'selected-off');
+  });
+}
+
+function goTo(i) { current=i; buildDots(); buildCard(); }
+function next() { if(current<steps.length-1){current++;buildDots();buildCard();} }
+function prev() { if(current>0){current--;buildDots();buildCard();} }
+
+buildDots();
+buildCard();
+</script>
+</body>
+</html>

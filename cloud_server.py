@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_from_directory
 from flask_cors import CORS
 import json, os, time, secrets
 from datetime import datetime
@@ -253,6 +253,16 @@ def fix_cycle():
 def install():
     with open(os.path.join(os.path.dirname(__file__), "install_client.sh")) as f:
         return f.read(), 200, {"Content-Type": "text/plain"}
+
+
+@app.route("/guide")
+def guide_index():
+    with open(os.path.join(os.path.dirname(__file__), "guide/filtrbox_guide.html")) as f:
+        return f.read()
+
+@app.route("/guide/<path:filename>")
+def guide_files(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "guide"), filename)
 
 if __name__ == "__main__":
     init_db()
