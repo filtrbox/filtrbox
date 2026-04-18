@@ -228,7 +228,8 @@ def admin_add_user():
 
 @app.route("/")
 def index():
-    return "<h2>FILTRBOX Cloud API - OK</h2><p>Serveur actif.</p>"
+    with open(os.path.join(os.path.dirname(__file__), "home.html")) as f:
+        return f.read()
 
 
 @app.route("/dashboard")

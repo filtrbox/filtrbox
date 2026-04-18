@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FILTRBOX — Smart Pool Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --blue-dark: #0a2a4a;
+  --blue-mid: #0f4c81;
+  --blue-light: #1a6fa8;
+  --cyan: #00D9FF;
+  --green: #00FF94;
+  --white: #ffffff;
+}
+
+html { scroll-behavior:smooth; }
+body { font-family:'Nunito', sans-serif; background:var(--blue-dark); color:var(--white); overflow-x:hidden; }
+
+/* ── BACKGROUND ── */
+.bg-gradient {
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0,217,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(0,255,148,0.06) 0%, transparent 60%),
+    linear-gradient(160deg, #0a1628 0%, #0a2a4a 40%, #0d3d6e 100%);
+}
+
+/* Grid pattern */
+.bg-grid {
+  position:fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:60px 60px;
+}
+
+/* Bubbles */
+.bubbles { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.bubble { position:absolute; bottom:-100px; border-radius:50%; background:rgba(0,217,255,0.08); border:1px solid rgba(0,217,255,0.15); animation:rise linear infinite; }
+.bubble:nth-child(1){width:40px;height:40px;left:5%;animation-duration:12s}
+.bubble:nth-child(2){width:20px;height:20px;left:18%;animation-duration:16s;animation-delay:3s}
+.bubble:nth-child(3){width:60px;height:60px;left:32%;animation-duration:14s;animation-delay:6s}
+.bubble:nth-child(4){width:25px;height:25px;left:50%;animation-duration:18s;animation-delay:1s}
+.bubble:nth-child(5){width:45px;height:45px;left:68%;animation-duration:13s;animation-delay:4s}
+.bubble:nth-child(6){width:30px;height:30px;left:82%;animation-duration:15s;animation-delay:7s}
+.bubble:nth-child(7){width:15px;height:15px;left:92%;animation-duration:11s;animation-delay:2s}
+@keyframes rise{0%{bottom:-100px;opacity:0}10%{opacity:1}90%{opacity:0.5}100%{bottom:110vh;opacity:0}}
+
+/* Waves */
+.waves-wrap { position:fixed; bottom:0; left:0; width:100%; z-index:1; pointer-events:none; }
+.wave-svg { display:block; width:100%; }
+
+/* ── LAYOUT ── */
+.content { position:relative; z-index:10; min-height:100vh; display:flex; flex-direction:column; }
+
+/* ── HEADER ── */
+header {
+  padding:20px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  backdrop-filter:blur(10px);
+  position:sticky; top:0; z-index:100;
+  background:rgba(10,26,40,0.7);
+}
+.header-logo { font-family:'Fredoka One',cursive; font-size:22px; letter-spacing:3px; color:var(--white); text-shadow:0 0 20px rgba(0,217,255,0.4); }
+.header-logo span { color:var(--cyan); }
+.header-nav { display:flex; gap:8px; }
+.header-link {
+  padding:7px 14px; border-radius:20px;
+  font-size:13px; font-weight:700; text-decoration:none;
+  border:1.5px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7);
+  transition:all 0.2s;
+  backdrop-filter:blur(5px);
+}
+.header-link:hover { border-color:var(--cyan); color:var(--cyan); }
+.header-link.cta { background:rgba(0,255,148,0.15); border-color:rgba(0,255,148,0.4); color:var(--green); }
+.header-link.cta:hover { background:rgba(0,255,148,0.25); }
+
+/* ── HERO ── */
+.hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 24px 40px; }
+
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(0,217,255,0.1); border:1px solid rgba(0,217,255,0.3);
+  border-radius:20px; padding:6px 16px; margin-bottom:28px;
+  font-size:12px; font-weight:700; color:var(--cyan); letter-spacing:1px;
+  text-transform:uppercase;
+  animation:fadeDown 0.6s ease forwards;
+}
+.badge-dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:blink 2s ease-in-out infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.hero-title {
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(52px, 10vw, 96px);
+  letter-spacing:-2px;
+  line-height:0.95;
+  margin-bottom:12px;
+  animation:fadeUp 0.7s ease 0.1s both;
+}
+.hero-title .line1 { display:block; color:var(--white); text-shadow:0 0 60px rgba(0,217,255,0.3); }
+.hero-title .line2 { display:block; color:var(--cyan); text-shadow:0 0 40px rgba(0,217,255,0.6); }
+
+.hero-sub {
+  font-size:clamp(14px,2.5vw,18px); font-weight:600;
+  color:rgba(255,255,255,0.6); max-width:460px;
+  line-height:1.6; margin-bottom:10px;
+  animation:fadeUp 0.7s ease 0.2s both;
+}
+.hero-sub-en {
+  font-size:clamp(12px,2vw,14px); font-weight:600;
+  color:rgba(255,255,255,0.35); max-width:460px;
+  line-height:1.6; margin-bottom:40px; font-style:italic;
+  animation:fadeUp 0.7s ease 0.25s both;
+}
+
+/* ── CARDS GRID ── */
+.cards-section { padding:0 20px 60px; max-width:900px; margin:0 auto; width:100%; }
+
+.section-label {
+  text-align:center; font-size:11px; font-weight:700;
+  color:rgba(255,255,255,0.35); letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:20px;
+}
+
+.cards-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+
+.nav-card {
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:20px; padding:24px 20px;
+  text-decoration:none; color:var(--white);
+  transition:all 0.25s ease;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:12px;
+  animation:fadeUp 0.6s ease both;
+  position:relative; overflow:hidden;
+}
+.nav-card::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%);
+  opacity:0; transition:opacity 0.3s;
+}
+.nav-card:hover { transform:translateY(-4px); border-color:rgba(255,255,255,0.25); }
+.nav-card:hover::before { opacity:1; }
+.nav-card:active { transform:translateY(-2px); }
+
+.nav-card.guide { border-color:rgba(0,217,255,0.25); }
+.nav-card.guide:hover { border-color:rgba(0,217,255,0.5); box-shadow:0 8px 32px rgba(0,217,255,0.15); }
+.nav-card.client { border-color:rgba(0,255,148,0.25); }
+.nav-card.client:hover { border-color:rgba(0,255,148,0.5); box-shadow:0 8px 32px rgba(0,255,148,0.15); }
+.nav-card.admin { border-color:rgba(255,200,50,0.2); }
+.nav-card.admin:hover { border-color:rgba(255,200,50,0.4); box-shadow:0 8px 32px rgba(255,200,50,0.1); }
+.nav-card.contact { border-color:rgba(200,150,255,0.2); }
+.nav-card.contact:hover { border-color:rgba(200,150,255,0.4); box-shadow:0 8px 32px rgba(200,150,255,0.1); }
+
+.nav-card-icon { font-size:36px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.nav-card-title { font-family:'Fredoka One',cursive; font-size:18px; color:var(--white); }
+.nav-card-sub-fr { font-size:12px; font-weight:700; color:rgba(255,255,255,0.5); line-height:1.4; }
+.nav-card-sub-en { font-size:11px; font-weight:600; color:rgba(255,255,255,0.3); font-style:italic; }
+.nav-card-arrow {
+  margin-top:4px; font-size:18px;
+  transition:transform 0.2s;
+}
+.nav-card:hover .nav-card-arrow { transform:translateX(4px); }
+
+.nav-card.guide .nav-card-title { color:var(--cyan); }
+.nav-card.client .nav-card-title { color:var(--green); }
+.nav-card.admin .nav-card-title { color:rgba(255,210,60,1); }
+.nav-card.contact .nav-card-title { color:rgba(210,170,255,1); }
+
+/* ── FEATURES ── */
+.features { padding:20px 20px 60px; max-width:900px; margin:0 auto; width:100%; }
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+.feature {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px; padding:16px 14px;
+  text-align:center;
+  animation:fadeUp 0.6s ease both;
+}
+.feature-icon { font-size:22px; margin-bottom:6px; }
+.feature-fr { font-size:12px; font-weight:900; color:rgba(255,255,255,0.8); }
+.feature-en { font-size:10px; color:rgba(255,255,255,0.35); font-style:italic; margin-top:2px; }
+
+/* ── FOOTER ── */
+footer {
+  text-align:center; padding:20px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  font-size:11px; color:rgba(255,255,255,0.25); font-weight:700;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:none} }
+
+.nav-card:nth-child(1){animation-delay:0.3s}
+.nav-card:nth-child(2){animation-delay:0.4s}
+.nav-card:nth-child(3){animation-delay:0.5s}
+.nav-card:nth-child(4){animation-delay:0.6s}
+.feature:nth-child(1){animation-delay:0.5s}
+.feature:nth-child(2){animation-delay:0.6s}
+.feature:nth-child(3){animation-delay:0.7s}
+.feature:nth-child(4){animation-delay:0.8s}
+.feature:nth-child(5){animation-delay:0.9s}
+.feature:nth-child(6){animation-delay:1.0s}
+
+/* Mobile */
+@media(max-width:480px) {
+  .header-nav { gap:6px; }
+  .header-link { padding:6px 10px; font-size:11px; }
+  .cards-grid { grid-template-columns:1fr 1fr; }
+  .hero { padding:40px 16px 30px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<div class="bg-grid"></div>
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div>
+</div>
+<div class="waves-wrap">
+  <svg class="wave-svg" viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="rgba(0,217,255,0.04)"/>
+    <path d="M0,55 C360,20 720,70 1080,30 C1260,10 1380,50 1440,55 L1440,80 L0,80 Z" fill="rgba(0,255,148,0.03)"/>
+  </svg>
+</div>
+
+<div class="content">
+  <header>
+    <div class="header-logo">FILTR<span>BOX</span></div>
+    <nav class="header-nav">
+      <a href="/guide" class="header-link">Guide</a>
+      <a href="/client" class="header-link cta">Ma piscine</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      Système connecté / Connected system
+    </div>
+    <h1 class="hero-title">
+      <span class="line1">Smart Pool</span>
+      <span class="line2">Control</span>
+    </h1>
+    <p class="hero-sub">Pilotez votre piscine depuis n'importe où dans le monde, en toute sécurité.</p>
+    <p class="hero-sub-en">Control your pool from anywhere in the world, safely and securely.</p>
+  </section>
+
+  <section class="cards-section">
+    <div class="section-label">Accès rapide / Quick access</div>
+    <div class="cards-grid">
+
+      <a href="/guide" class="nav-card guide">
+        <div class="nav-card-icon">📖</div>
+        <div class="nav-card-title">Guide</div>
+        <div class="nav-card-sub-fr">Tutoriels et animations explicatives</div>
+        <div class="nav-card-sub-en">Tutorials & animated guides</div>
+        <div class="nav-card-arrow">→</div>
+      </a>
+
+      <a href="/client" class="nav-card client">
+        <div class="nav-card-icon">🏊</div>
+        <div class="nav-card-title">Ma piscine</div>
+        <div class="nav-card-sub-fr">Contrôlez votre installation</div>
+        <div class="nav-card-sub-en">Control your installation</div>
+        <div class="nav-card-arrow">→</div>
+      </a>
+
+      <a href="/dashboard" class="nav-card admin">
+        <div class="nav-card-icon">⚙️</div>
+        <div class="nav-card-title">Admin</div>
+        <div class="nav-card-sub-fr">Tableau de bord administrateur</div>
+        <div class="nav-card-sub-en">Administrator dashboard</div>
+        <div class="nav-card-arrow">→</div>
+      </a>
+
+      <a href="mailto:contact@filtrbox.fr" class="nav-card contact">
+        <div class="nav-card-icon">✉️</div>
+        <div class="nav-card-title">Contact</div>
+        <div class="nav-card-sub-fr">Contactez votre installateur</div>
+        <div class="nav-card-sub-en">Contact your installer</div>
+        <div class="nav-card-arrow">→</div>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="section-label">Fonctionnalités / Features</div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">🌐</div>
+        <div class="feature-fr">Accès mondial</div>
+        <div class="feature-en">Worldwide access</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-fr">Connexion sécurisée</div>
+        <div class="feature-en">Secure connection</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-fr">Temps réel</div>
+        <div class="feature-en">Real time</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔁</div>
+        <div class="feature-fr">Cycles automatiques</div>
+        <div class="feature-en">Automatic cycles</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📱</div>
+        <div class="feature-fr">Mobile & PC</div>
+        <div class="feature-en">Mobile & desktop</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-fr">Contact AUX sécurisé</div>
+        <div class="feature-en">Secure AUX contact</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    FILTRBOX © 2026 — Smart Pool Control — filtrbox.fr
+  </footer>
+</div>
+
+</body>
+</html>
