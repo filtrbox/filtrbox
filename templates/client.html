@@ -107,9 +107,23 @@
         .login-btn { width: 100%; padding: 16px; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5); border-radius: 14px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
         .login-btn:active { transform: scale(0.97); }
         .login-error { color: #FF4444; font-size: 13px; text-align: center; margin-top: 10px; min-height: 20px; }
-    </style>
+    
+.home-btn {
+  position: fixed; top: 12px; left: 12px; z-index: 99999;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 20px; padding: 6px 14px;
+  color: white; font-family: sans-serif;
+  font-size: 12px; font-weight: 700;
+  text-decoration: none; backdrop-filter: blur(10px);
+  transition: all 0.2s;
+}
+.home-btn:hover { background: rgba(255,255,255,0.25); }
+
+</style>
 </head>
 <body>
+<a href="/" class="home-btn">← filtrbox.fr</a>
 
     <!-- LOGIN -->
     <div class="login-screen" id="loginScreen">
