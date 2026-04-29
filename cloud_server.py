@@ -265,6 +265,12 @@ def guide_index():
 def guide_files(filename):
     return send_from_directory(os.path.join(os.path.dirname(__file__), "guide"), filename)
 
+
+@app.route("/animation")
+def animation():
+    with open(os.path.join(os.path.dirname(__file__), "filtrbox_animation_en.html")) as f:
+        return f.read()
+
 if __name__ == "__main__":
     init_db()
     print("\n" + "="*50)
