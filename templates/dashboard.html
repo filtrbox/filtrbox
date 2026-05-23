@@ -402,6 +402,7 @@
         // ── Sélecteur de prototype ───────────────────────────────
         function populateSelector(devices) {
             const sel = document.getElementById("deviceSelect");
+            const previousId = selectedId || sel.value;
             sel.innerHTML = "";
             const ids = Object.keys(devices);
             if (!ids.length) { sel.innerHTML = "<option>Aucun prototype connecté</option>"; return; }
@@ -411,7 +412,12 @@
                 opt.textContent = `${devices[id].name || id} ${devices[id].online ? "🟢" : "🔴"}`;
                 sel.appendChild(opt);
             });
-            selectedId = ids[0];
+            if (previousId && ids.includes(previousId)) {
+                sel.value = previousId;
+                selectedId = previousId;
+            } else {
+                selectedId = ids[0];
+            }
         }
 
         function onDeviceChange() {
