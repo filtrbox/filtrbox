@@ -266,6 +266,11 @@ def guide_files(filename):
     return send_from_directory(os.path.join(os.path.dirname(__file__), "guide"), filename)
 
 
+@app.route("/images/<path:filename>")
+def images_files(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "images"), filename)
+
+
 @app.route("/animation")
 def animation():
     with open(os.path.join(os.path.dirname(__file__), "filtrbox_animation_en.html")) as f:
