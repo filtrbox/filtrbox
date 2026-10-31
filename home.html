@@ -129,6 +129,36 @@ background:rgba(255,255,255,.06);
 padding:20px;border-radius:18px;text-align:center;
 }
 footer{text-align:center;padding:30px;opacity:.7}
+html{scroll-behavior:smooth}
+.contact{
+max-width:1000px;
+margin:60px auto;
+padding:20px;
+text-align:center;
+}
+.contact h2{font-size:34px;margin-bottom:25px}
+.contact-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:20px;
+}
+.contact-card{
+background:rgba(255,255,255,.08);
+padding:25px;
+border-radius:20px;
+}
+.contact-label{
+font-size:13px;
+letter-spacing:2px;
+opacity:.7;
+margin-bottom:10px;
+}
+.contact-name{font-size:20px;font-weight:700;margin-bottom:6px}
+.contact-card a{
+color:white;
+text-decoration:none;
+font-weight:600;
+}
 </style>
 </head>
 <body>
@@ -170,9 +200,31 @@ footer{text-align:center;padding:30px;opacity:.7}
 <a href="/guide">Guide</a>
 <a href="/client">Ma piscine</a>
 <a href="/dashboard">Admin</a>
-<a href="mailto:contact@filtrbox.fr">Contact</a>
+<a href="#contact">Contact</a>
 </section>
+<section class="contact" id="contact">
+<h2>Contact</h2>
+<div class="contact-grid">
 
+<div class="contact-card">
+<div class="contact-label">E-MAIL</div>
+<a href="mailto:filtrboxpool@gmail.com">filtrboxpool@gmail.com</a>
+</div>
+
+<div class="contact-card">
+<div class="contact-label">🇫🇷 CONTACT FRANCE</div>
+<div class="contact-name">Cédric</div>
+<a href="tel:+33621622409">+33 (0)6 21 62 24 09</a>
+</div>
+
+<div class="contact-card">
+<div class="contact-label">🇬🇧 ENGLISH CONTACT</div>
+<div class="contact-name">Eric</div>
+<a href="tel:+33769122862">+33 (0)7 69 12 28 62</a>
+</div>
+
+</div>
+</section>
 <footer>FILTRBOX © 2026 — SMART POOL CONTROL</footer>
 </div>
 </body>
